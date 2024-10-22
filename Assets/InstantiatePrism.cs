@@ -29,11 +29,7 @@ public class StartStimulus : MonoBehaviour
 
     public Material[] bookMaterials; 
 
-    public GameObject[] bookMeshes;
-
-    // For method of adjustment
-
-    private Vector3 triPrismScaleChange = new Vector3(0.0f, 0.0f, 0.1f);
+    public GameObject[] rockMeshes;
 
 
     void Awake()
@@ -63,7 +59,7 @@ public class StartStimulus : MonoBehaviour
         {
             float shelfLedgeX = 0f;
             shelfLedgeY -= rowHeight ;
-            Vector3 shelfLedgePosition = new Vector3(shelfLedgeX, shelfLedgeY, -0.45f);
+            Vector3 shelfLedgePosition = new Vector3(shelfLedgeX, shelfLedgeY, -0.2f);
 
             GameObject shelfLedge = GameObject.CreatePrimitive(PrimitiveType.Cube);
             shelfLedge.transform.position = shelfLedgePosition;
@@ -74,7 +70,7 @@ public class StartStimulus : MonoBehaviour
                     shelfRenderer.material = shelfMaterial;
                 }
 
-            shelfLedge.transform.localScale = new Vector3(5f, 0.05f, 1.0f);
+            shelfLedge.transform.localScale = new Vector3(5f, 0.05f, 0.5f);
         }
 
         // Let's add books and objects
@@ -89,116 +85,59 @@ public class StartStimulus : MonoBehaviour
         for (int row = 0; row < n_rows; row++) 
         {
             rowY -= rowHeight;
-            float currentXPosition = cornerBottomLeft.x + 0.3f;
-            float rowCenterY = rowY + 0.5f *rowHeight ; 
-            while (currentXPosition < cornerTopRight.x - 0.5f) 
+            float currentXPosition = cornerBottomLeft.x + 0.2f;
+            while (currentXPosition < cornerTopRight.x - 0.3f) 
             {
                 //float currentYPostion = rowY + (rowHeight/2);
                 if (Random.value >= wallSparseness)
                 {
 
-                    if (bookMeshes.Length > 0)
+                    GameObject book = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                    
+                    float rotationAngle = 0f;
+                    if (Random.value < 0.5f)
                     {
-                        
-
-                        // if (rotationAngle > -90f)
-                        // {
-                        //     currentXPosition += (book.GetComponent<Renderer>().bounds.size.x) * 0.5f / Mathf.Abs(Mathf.Cos((rotationAngle + 90f ) * Mathf.Deg2Rad)) ;
-                        // }
-                        // more buffer to reduce book overlap but it adds too much space
-
-                        if (currentXPosition < triPrismX - triPrism.GetComponent<Renderer>().bounds.size.x * 0.65f  || currentXPosition > triPrismX + triPrism.GetComponent<Renderer>().bounds.size.x * 0.65f || rowCenterY >  triPrismY + triPrism.GetComponent<Renderer>().bounds.size.y * 0.75f || rowCenterY < triPrismY - triPrism.GetComponent<Renderer>().bounds.size.y * 0.75f ) 
-                        {
-
-                            GameObject book = Instantiate(bookMeshes[Random.Range(0, bookMeshes.Length)]);
-
-                            float rotationAngle = -90f;
-                            if (Random.value < 0.5f)
-                            {
-                                rotationAngle = Random.Range(-135f, -45f);
-                            }
-
-                            // book.transform.rotation = Quaternion.Euler(0, 0, rotationAngle);
-
-                            float bookHeight = book.GetComponent<Renderer>().bounds.size.y ;
-
-                            float bookScaleZ = Random.Range(0.7f * rowHeight / bookHeight , (rowHeight - 0.1f) / bookHeight )  ;
-                            float bookScaleY = Mathf.Min( bookScaleZ + Random.Range( 0 , 0.7f * (rowHeight - 0.1f) / bookHeight), (rowHeight - 0.1f) / bookHeight ) ; // Maximum height is shelf height minus the ledge thickness
-                            float bookScaleX = bookScaleZ ;
-
-                            book.transform.localScale = new Vector3(bookScaleX, bookScaleY, bookScaleZ);
-
-                            if (rotationAngle != -90f)
-                            {
-                                currentXPosition += Mathf.Abs(Mathf.Sin((rotationAngle + 90f ) * Mathf.Deg2Rad)) * (book.GetComponent<Renderer>().bounds.size.z   ) / 2  ;
-                            }
-                            float currentYPosition = rowY + book.GetComponent<Renderer>().bounds.size.y  / 2 ;
-
-                            float currentZPosition = Random.Range(-0.2f, -0.3f) - book.GetComponent<Renderer>().bounds.size.z  / 2;
-
-                            book.transform.position = new Vector3(currentXPosition, 
-                                                                currentYPosition,
-                                                                currentZPosition); // Z needs to be based on scale (different depth)
-
-                            book.transform.rotation = Quaternion.Euler(rotationAngle, 90f, 0f);
-
-                            Renderer bookRenderer = book.GetComponent<Renderer>();
-
-                            currentXPosition += (book.GetComponent<Renderer>().bounds.size.x )  ;
-
-
-                        }
-                        else
-                        { 
-                            currentXPosition += 0.2f; 
-                        }
-
-                        
-                        
-
+                        rotationAngle = Random.Range(-45f, 45f);
                     }
 
-                    else
+                    book.transform.rotation = Quaternion.Euler(0, 0, rotationAngle);
+
+                    float bookScaleX = Random.Range(0.02f, 0.1f);
+                    float bookScaleY = Random.Range(1.0f , 2.5f) / n_rows;
+                    float bookScaleZ = Random.Range(0.1f, 0.4f);
+
+                    book.transform.localScale = new Vector3(bookScaleX, bookScaleY, bookScaleZ);
+
+                    if (rotationAngle != 0)
                     {
-                        GameObject book = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                    
-                        float rotationAngle = 0f;
-                        if (Random.value < 0.5f)
-                        {
-                            rotationAngle = Random.Range(-45f, 45f);
-                        }
-
-                        book.transform.rotation = Quaternion.Euler(0, 0, rotationAngle);
-
-                        float bookScaleX = Random.Range(0.02f, 0.1f);
-                        float bookScaleY = Random.Range(1.0f , 2.5f) / n_rows;
-                        float bookScaleZ = Random.Range(0.1f, 0.4f);
-
-                        book.transform.localScale = new Vector3(bookScaleX, bookScaleY, bookScaleZ);
-
-                        if (rotationAngle != 0)
-                        {
-                            currentXPosition += Mathf.Sin(rotationAngle * Mathf.Deg2Rad) * (book.GetComponent<Renderer>().bounds.size.x  * bookScaleX ) + 0.1f ;
-                        }
-
-                        float currentYPosition = rowY + book.GetComponent<Renderer>().bounds.size.y * bookScaleY / 2 + 0.1f ;
-
-                        float currentZPosition = -0.1f - book.GetComponent<Renderer>().bounds.size.z  * bookScaleZ / 2;
-
-                        book.transform.position = new Vector3(currentXPosition, 
-                                                            currentYPosition,
-                                                            currentZPosition); // Z needs to be based on scale (different depth)
-
-                        Renderer bookRenderer = book.GetComponent<Renderer>();
-                        if (bookRenderer != null && bookMaterials.Length > 0)
-                        {
-                            Material randomMaterial = bookMaterials[Random.Range(0, bookMaterials.Length)];
-                            bookRenderer.material = randomMaterial;
-                        }
-
-                        currentXPosition += (book.GetComponent<Renderer>().bounds.size.x  * bookScaleX) * 2 + 0.1f;
+                        currentXPosition += Mathf.Sin(rotationAngle * Mathf.Deg2Rad) * (book.GetComponent<Renderer>().bounds.size.x  * bookScaleX ) + 0.1f ;
                     }
-                    
+
+                    float currentYPosition = rowY + book.GetComponent<Renderer>().bounds.size.y * bookScaleY / 2 + 0.1f ;
+
+                    float currentZPosition = -0.1f - book.GetComponent<Renderer>().bounds.size.z  * bookScaleZ / 2;
+
+                    // if (currentYPosition < triPrismY + triPrismHeight / 2 && currentYPosition > triPrismY - triPrismHeight/ 2 )
+                    // {
+                    //     if (currentXPosition + (book.GetComponent<Renderer>().bounds.size.x  * bookScaleX) / 2 > triPrismXMin && currentXPosition + (book.GetComponent<Renderer>().bounds.size.x  * bookScaleX) / 2 < triPrismXMax)
+                    //     {
+
+                    //         currentXPosition += (triPrismWidth + Mathf.Abs(Mathf.Sin( triPrismRotateCCW * Mathf.Deg2Rad) * (triPrism.GetComponent<Renderer>().bounds.size.y  * triPrismScale.y ))) / 2    ;//(book.GetComponent<Renderer>().bounds.size.x  * bookScaleX);
+                    //     }
+                    // }
+
+                    book.transform.position = new Vector3(currentXPosition, 
+                                                          currentYPosition,
+                                                          currentZPosition); // Z needs to be based on scale (different depth)
+
+                    Renderer bookRenderer = book.GetComponent<Renderer>();
+                    if (bookRenderer != null && bookMaterials.Length > 0)
+                    {
+                        Material randomMaterial = bookMaterials[Random.Range(0, bookMaterials.Length)];
+                        bookRenderer.material = randomMaterial;
+                    }
+
+                    currentXPosition += (book.GetComponent<Renderer>().bounds.size.x  * bookScaleX) * 2 + 0.1f;
 
                 }
 
@@ -216,38 +155,11 @@ public class StartStimulus : MonoBehaviour
 
     void Update()
     {
-        //Vector3 position = new Vector3(triPrismX, triPrismY, triPrismZ);
-        //triPrism.transform.position = position;
-        //triPrism.transform.localScale = triPrismScale; 
-        if (Input.GetKeyDown(KeyCode.UpArrow))
-        {
-            ScaleUp();
-        }
-        
-        if (Input.GetKeyDown(KeyCode.DownArrow))
-        {
-            if (triPrism.transform.localScale.z - triPrismScaleChange.z > 0)
-            {
-                ScaleDown();
-            }
-        }
-
+        Vector3 position = new Vector3(triPrismX, triPrismY, triPrismZ);
+        triPrism.transform.position = position;
+        triPrism.transform.localScale = triPrismScale; 
     }
 
-    private void ScaleUp()
-    {
-        float currentTriPrismZ = triPrism.GetComponent<Renderer>().bounds.size.z;
-        triPrism.transform.localScale += triPrismScaleChange;
-        float changeInScale = (triPrism.GetComponent<Renderer>().bounds.size.z - currentTriPrismZ) / 2;
-        triPrism.transform.position += new Vector3(0.0f, 0.0f, -changeInScale);
-    }
 
-    private void ScaleDown()
-    {
-        float currentTriPrismZ = triPrism.GetComponent<Renderer>().bounds.size.z;
-        triPrism.transform.localScale -= triPrismScaleChange;
-        float changeInScale = (triPrism.GetComponent<Renderer>().bounds.size.z - currentTriPrismZ) / 2;
-        triPrism.transform.position += new Vector3(0.0f, 0.0f, -changeInScale);
-    }
 
 }
