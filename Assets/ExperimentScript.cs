@@ -102,7 +102,12 @@ public class ExperimentScript : MonoBehaviour
     bool LastStateA = false;
     bool LastStateB = false;
 
-
+    [SerializeField] GameObject panel_top;
+    [SerializeField] GameObject panel_bottom;
+    private float scrollSpeed = 0.05f;
+    float scaleFactor = 0.5f;
+    bool rotateLeftEdge = true;
+    Transform pivotTransform;
     void GetDevice()
     {
         InputDevices.GetDevicesAtXRNode(xrNode, devices);
@@ -147,8 +152,8 @@ public class ExperimentScript : MonoBehaviour
         fixation2.SetActive(false);
 
 
-        left_panel.SetActive(false);
-        right_panel.SetActive(false);
+        //left_panel.SetActive(false);
+        //right_panel.SetActive(false);
 
         this.angles = new List<Trial>();
 
@@ -167,15 +172,33 @@ public class ExperimentScript : MonoBehaviour
         file = new StreamWriter(Application.persistentDataPath + "/ipd_results.txt", true);
 
         Shuffle(angles);
-        
 
+        panel_top.transform.localPosition = new Vector3(0f, 2f, 2.1f);
+        panel_bottom.transform.localPosition = new Vector3(0f, 2f, 2.1f);
     }
 
     // Update is called once per frame
     void Update()
     {
-
         
+
+        // texture rolling
+        float offset = Time.time * scrollSpeed;
+        left_panel_tex.GetComponent<Renderer>().material.mainTextureOffset = new Vector2(offset, 0);
+        panel_top.GetComponent<Renderer>().material.mainTextureOffset = new Vector2(0, -offset);
+        panel_bottom.GetComponent<Renderer>().material.mainTextureOffset = new Vector2(0, offset);
+        /*
+        // Scale the panel's width
+        right_panel_tex.transform.localScale = new Vector3(scaleFactor, right_panel_tex.transform.localScale.y, right_panel_tex.transform.localScale.z);
+
+        // Set the texture offset for scrolling
+        right_panel_tex.GetComponent<Renderer>().material.mainTextureOffset = new Vector2(offset, 0);
+
+        // Adjust the texture tiling to keep it from stretching on the scaled panel
+        right_panel_tex.GetComponent<Renderer>().material.mainTextureScale = new Vector2(1 / scaleFactor / 4, 1);
+        */
+        scale_panel(panel_top, -offset);
+        scale_panel(panel_bottom, offset);
 
         if (!device.isValid)
         {
@@ -197,7 +220,7 @@ public class ExperimentScript : MonoBehaviour
             }
             else if (primaryButton == false)
             {
-                ButtonPressed();
+                //ButtonPressed();
                 firstinterval = true;
                 secondinterval = false;
             }
@@ -215,7 +238,7 @@ public class ExperimentScript : MonoBehaviour
             }
             else if (secondaryButton == false)
             {
-                ButtonPressed();
+                //ButtonPressed();
                 firstinterval = false;
                 secondinterval = true;
             }
@@ -228,21 +251,36 @@ public class ExperimentScript : MonoBehaviour
         left_panel.transform.Rotate(0f, 0f, 0.5f*Adjust.x);
         right_panel.transform.Rotate(0f, 0f, 0.5f*-Adjust.x);
 
+        panel_top.transform.Rotate(0.5f * -Adjust.x, 0f, 0f);
+        panel_bottom.transform.Rotate(0.5f * Adjust.x, 0f, 0f);
 
+        
     }
 
+    void scale_panel(GameObject panel, float offset)
+    {
+        // Scale the panel's width
+        panel.transform.localScale = new Vector3(panel.transform.localScale.x, panel.transform.localScale.y, scaleFactor);
+        //debug_panel.transform.localScale = new Vector3(debug_panel.transform.localScale.x, debug_panel.transform.localScale.y, debug_panel.transform.localScale.z * scaleFactor);
+
+        // Adjust the texture tiling to keep it from stretching on the scaled panel
+        panel.GetComponent<Renderer>().material.mainTextureScale = new Vector2(1, scaleFactor);
+
+        // Set the texture offset for scrolling, with an initial offset to center it
+        panel.GetComponent<Renderer>().material.mainTextureOffset = new Vector2(0, 0.5f - offset);
+    }    
     void ButtonPressed()
     {
 
         switch (stage)
         {
             case Stage.First:
-                FirstStage();
+                //FirstStage();
                 //stage = Stage.Second;
                 break;
 
             case Stage.Second:
-                SecondStage();
+                //SecondStage();
                 stage = Stage.First;
                 break;
 
@@ -252,169 +290,7 @@ public class ExperimentScript : MonoBehaviour
         }
     }
 
-    void FirstStage()
-    {
-
-        //show fixation dot, all other discs invisible.
-        adjustment.SetActive(false);
-        fixation.SetActive(false);
-        fixation2.SetActive(false);
-        aperture.SetActive(false);
-        aperture_sec.SetActive(false);
-
-
-        left_panel.SetActive(false);
-        right_panel.SetActive(false);
-
-        //random depth offset of surfaces
-        var ref_z_offset = Random.Range(20f, 70f);
-        var com_z_offset = Random.Range(20f, 70f);
-
-        //var scale = Random.Range(0.5f, 1f);
-
-
-        refz_offset = ref_z_offset; //ref_z_offset
-        comz_offset = com_z_offset; //ref_z_offset
-
-
-        var ref_offset = ref_z_offset.ToString(); //ref_z_offset.ToString()
-        var com_offset = left_panel.transform.localEulerAngles.y.ToString(); //com_z_offset.ToString()
-
-
-
-        if (hasStarted)
-        {
-            var angle = this.angles[currentTrial++];
-
-            angle.AdjustmentAngle = left_panel.transform.localPosition; 
-
-            this.file.WriteLine(angle + ", " + com_offset + ", " + ref_offset + "\n"); // this.file.WriteLine(angle + "\n");
-        }
-
-
-
-        if (currentTrial >= angles.Count)
-        {
-            file.WriteLine("\n");
-            file.Close();
-            Application.Quit();
-        }
-        //randomize initial angle
-        left_panel.transform.localEulerAngles = new Vector3(90f, ref_z_offset, 0f);
-        right_panel.transform.localEulerAngles = new Vector3(90f, -ref_z_offset, 0f);
-
-        SecondStage();
-
-
-    }
-
-
-
-    void SecondStage()
-    {
-        firstinterval = false;
-        secondinterval = false;
-
-        var angle = angles[currentTrial];
-
-
-        //randomize texture offset
-
-
-        left_panel_tex.GetComponent<Renderer>().material.mainTextureOffset = new Vector2(Random.Range(0f, 0.1f), Random.Range(0f, 0.1f));
-        right_panel_tex.GetComponent<Renderer>().material.mainTextureOffset = new Vector2(Random.Range(0f, 0.1f), Random.Range(0f, 0.1f));
-
-
-
-
-        switch (angle.Location)
-        {
-
-            //case Location.near:
-
-            //    StartCoroutine(present_near());
-            //    break;
-
-            case Location.mid:
-                fixation.transform.localPosition = new Vector3(0f, 0f, 2f);
-                fixation.transform.localScale = new Vector3(0.06f, 0.011f, 0.001f);
-                fixation2.transform.localPosition = new Vector3(0f, 0f, 2f);
-                fixation2.transform.localScale = new Vector3(0.011f, 0.06f, 0.001f);
-                left_panel.transform.localPosition = new Vector3(0f, 0f, 2f);
-                right_panel.transform.localPosition = new Vector3(0f, 0f, 2f);
-
-                //left_panel.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
-                //right_panel.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
-
-                var scale = 0.5f; /*Random.Range(0.5f, 0.8f);*/
-
-                left_panel.transform.localScale = new Vector3(scale, 0.5f, scale); //2f 
-                right_panel.transform.localScale = new Vector3(scale, 0.5f, scale); //2f
-
-               // left_panel_tex.GetComponent<Renderer>().material.mainTextureScale = new Vector2(1f, 1f);
-               //right_panel_tex.GetComponent<Renderer>().material.mainTextureScale = new Vector2(1f, 1f);
-
-                StartCoroutine(present_panels());
-                break;
-
-            case Location.near:
-                fixation.transform.localPosition = new Vector3(0f, 0f, 1.5f);
-                fixation.transform.localScale = new Vector3(0.06f * 0.75f, 0.011f * 0.75f, 0.001f);
-                fixation2.transform.localPosition = new Vector3(0f, 0f, 1.5f);
-                fixation2.transform.localScale = new Vector3(0.011f * 0.75f, 0.06f * 0.75f, 0.001f);
-                left_panel.transform.localPosition = new Vector3(0f, 0f, 1.5f);
-                right_panel.transform.localPosition = new Vector3(0f, 0f, 1.5f);
-
-                //left_panel.transform.localScale = new Vector3(0.5f*0.5f, 0.5f*0.5f, 0.5f);
-                //right_panel.transform.localScale = new Vector3(0.5f*0.5f, 0.5f*0.5f, 0.5f);
-
-                var scale2 = 0.5f; /*Random.Range(0.55f, 0.8f);*/
-
-                left_panel.transform.localScale = new Vector3(scale2 * 0.75f, 0.5f, scale2 * 0.75f); //2f *0.5
-                right_panel.transform.localScale = new Vector3(scale2* 0.75f, 0.5f, scale2 * 0.75f); //2f *0.5
-                //left_panel_tex.GetComponent<Renderer>().material.mainTextureScale = new Vector2(1f, 1f);
-                //right_panel_tex.GetComponent<Renderer>().material.mainTextureScale = new Vector2(1f, 1f);
-
-                StartCoroutine(present_panels());
-                break;
-
-            case Location.far:
-                fixation.transform.localPosition = new Vector3(0f, 0f, 2.5f);
-                fixation.transform.localScale = new Vector3(0.06f*1.25f, 0.011f * 1.25f, 0.001f);
-                fixation2.transform.localPosition = new Vector3(0f, 0f, 2.5f);
-                fixation2.transform.localScale = new Vector3(0.011f * 1.25f, 0.06f * 1.25f, 0.001f);
-                left_panel.transform.localPosition = new Vector3(0f, 0f, 2.5f);
-                right_panel.transform.localPosition = new Vector3(0f, 0f, 2.5f);
-                //StartCoroutine(present_mid());
-
-                //left_panel.transform.localScale = new Vector3(0.5f * 1.5f, 0.5f * 1.5f, 0.5f);
-                //right_panel.transform.localScale = new Vector3(0.5f * 1.5f, 0.5f * 1.5f, 0.5f);
-
-                var scale3 = 0.5f; /*Random.Range(0.5f, 0.8f);*/
-
-                left_panel.transform.localScale = new Vector3(scale3 * 1.25f, 0.5f, scale3 * 1.25f);
-                right_panel.transform.localScale = new Vector3(scale3 * 1.25f, 0.5f, scale3 * 1.25f);
-                //left_panel_tex.GetComponent<Renderer>().material.mainTextureScale = new Vector2(1f, 1f);
-                //right_panel_tex.GetComponent<Renderer>().material.mainTextureScale = new Vector2(1f, 1f);
-
-
-                StartCoroutine(present_panels());
-                break;
-
-
-
-        }
-
-
-
-
-        adjustment.SetActive(false);
-
-        hasStarted = true;
-
-
-    }
-
+    
     IEnumerator waitTime()
     {
 
