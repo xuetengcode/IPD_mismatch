@@ -50,13 +50,10 @@ struct Trial
 
 public class ExperimentScript : MonoBehaviour
 {
-    private const int Step = 1, MaxAngle = 1, MinAngle = 1
-         , Repetitions = 20; // Repetition = 20
+    [SerializeField] GameObject panel_top;
+    [SerializeField] GameObject panel_bottom;
 
-    private List<Trial> angles;
-    private int currentTrial = 0;
 
-   
     public GameObject adjustment;
     public GameObject fixation;
     public GameObject fixation2;
@@ -83,6 +80,13 @@ public class ExperimentScript : MonoBehaviour
     public float refz_offset;
     public float comz_offset;
 
+    // ---------------------------
+    private const int Step = 1, MaxAngle = 1, MinAngle = 1
+         , Repetitions = 20; // Repetition = 20
+
+    private List<Trial> angles;
+    private int currentTrial = 0;
+
     private bool firstinterval = false;
     private bool secondinterval = false;
 
@@ -102,49 +106,18 @@ public class ExperimentScript : MonoBehaviour
     bool LastStateA = false;
     bool LastStateB = false;
 
-    [SerializeField] GameObject panel_top;
-    [SerializeField] GameObject panel_bottom;
+    bool primaryButton = false;
+    bool secondaryButton = false;
+
     private float scrollSpeed = 0.05f;
     float scaleFactor = 0.5f;
-    bool rotateLeftEdge = true;
-    Transform pivotTransform;
-    void GetDevice()
-    {
-        InputDevices.GetDevicesAtXRNode(xrNode, devices);
-        device = devices.FirstOrDefault();
-    }
-
-    void OnEnable()
-    {
-        if (!device.isValid)
-        {
-            GetDevice();
-        }
-    }
-
-
-    public static void Shuffle<T>(IList<T> list)
-    {
-        var rng = new System.Random();
-        var n = list.Count;
-        while (n > 1)
-        {
-            n--;
-            var k = rng.Next(n + 1);
-            var value = list[k];
-            list[k] = list[n];
-            list[n] = value;
-        }
-    }
-
+    float scaleFactor_debug;
+    float angleInDegrees;
+    float angleInRadians;
     // Start is called before the first frame update
-
-    
 
     void Start()
     {
-
-        
         adjustment.SetActive(false);
 
         aperture.SetActive(false);
@@ -180,13 +153,11 @@ public class ExperimentScript : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
-
         // texture rolling
         float offset = Time.time * scrollSpeed;
         left_panel_tex.GetComponent<Renderer>().material.mainTextureOffset = new Vector2(offset, 0);
-        panel_top.GetComponent<Renderer>().material.mainTextureOffset = new Vector2(0, -offset);
-        panel_bottom.GetComponent<Renderer>().material.mainTextureOffset = new Vector2(0, offset);
+        //panel_top.GetComponent<Renderer>().material.mainTextureOffset = new Vector2(0, -offset);
+        //panel_bottom.GetComponent<Renderer>().material.mainTextureOffset = new Vector2(0, offset);
         /*
         // Scale the panel's width
         right_panel_tex.transform.localScale = new Vector3(scaleFactor, right_panel_tex.transform.localScale.y, right_panel_tex.transform.localScale.z);
@@ -197,18 +168,40 @@ public class ExperimentScript : MonoBehaviour
         // Adjust the texture tiling to keep it from stretching on the scaled panel
         right_panel_tex.GetComponent<Renderer>().material.mainTextureScale = new Vector2(1 / scaleFactor / 4, 1);
         */
-        scale_panel(panel_top, -offset);
-        scale_panel(panel_bottom, offset);
+        
+        //scale_panel(panel_top, -offset);
+        //scale_panel(panel_bottom, offset, scaleFactor);
 
         if (!device.isValid)
         {
             GetDevice();
         }
+        
+        device.TryGetFeatureValue(CommonUsages.primary2DAxis, out Vector2 Adjust);
 
-        bool primaryButton = false;
+        float tmp = 0.5f * Adjust.x;
+        Debug.Log("==> " + tmp);
 
-        bool secondaryButton = false;
+        //probe2.transform.Translate(0.0005f * Adjust.x, 0f, 0f);
+        left_panel.transform.Rotate(0f, 0f, 0.5f*Adjust.x);
+        right_panel.transform.Rotate(0f, 0f, 0.5f*-Adjust.x);
 
+        panel_top.transform.Rotate(0.5f * -Adjust.x, 0f, 0f);
+        panel_bottom.transform.Rotate(0.5f * Adjust.x, 0f, 0f);
+
+        angleInDegrees = panel_top.transform.eulerAngles.x;
+
+        // Convert the angle to radians
+        angleInRadians = angleInDegrees * Mathf.Deg2Rad;
+
+        //float angleInRadians = Adjust.x; //angleInDegrees * Mathf.Deg2Rad;
+        scaleFactor_debug = 1 / Mathf.Cos(angleInRadians);
+        scale_panel(panel_top, -offset, scaleFactor_debug);
+
+        scale_panel(panel_bottom, offset, scaleFactor_debug);
+        //-----------------------------------------------------------------------------------
+        primaryButton = false;
+        secondaryButton = false;
 
         device.TryGetFeatureValue(CommonUsages.primaryButton, out primaryButton);
 
@@ -245,30 +238,49 @@ public class ExperimentScript : MonoBehaviour
             //Set last known state of button
             LastStateB = secondaryButton;
         }
-
-        device.TryGetFeatureValue(CommonUsages.primary2DAxis, out Vector2 Adjust);
-        //probe2.transform.Translate(0.0005f * Adjust.x, 0f, 0f);
-        left_panel.transform.Rotate(0f, 0f, 0.5f*Adjust.x);
-        right_panel.transform.Rotate(0f, 0f, 0.5f*-Adjust.x);
-
-        panel_top.transform.Rotate(0.5f * -Adjust.x, 0f, 0f);
-        panel_bottom.transform.Rotate(0.5f * Adjust.x, 0f, 0f);
-
-        
     }
 
-    void scale_panel(GameObject panel, float offset)
+    void scale_panel(GameObject panel, float offset, float scaleFactor0)
     {
         // Scale the panel's width
-        panel.transform.localScale = new Vector3(panel.transform.localScale.x, panel.transform.localScale.y, scaleFactor);
+        panel.transform.localScale = new Vector3(panel.transform.localScale.x, panel.transform.localScale.y, scaleFactor0);
         //debug_panel.transform.localScale = new Vector3(debug_panel.transform.localScale.x, debug_panel.transform.localScale.y, debug_panel.transform.localScale.z * scaleFactor);
 
         // Adjust the texture tiling to keep it from stretching on the scaled panel
-        panel.GetComponent<Renderer>().material.mainTextureScale = new Vector2(1, scaleFactor);
+        panel.GetComponent<Renderer>().material.mainTextureScale = new Vector2(1, scaleFactor0);
 
         // Set the texture offset for scrolling, with an initial offset to center it
-        panel.GetComponent<Renderer>().material.mainTextureOffset = new Vector2(0, 0.5f - offset);
-    }    
+        //panel.GetComponent<Renderer>().material.mainTextureOffset = new Vector2(0, 0.5f - offset);
+    }
+
+    void GetDevice()
+    {
+        InputDevices.GetDevicesAtXRNode(xrNode, devices);
+        device = devices.FirstOrDefault();
+    }
+
+    void OnEnable()
+    {
+        if (!device.isValid)
+        {
+            GetDevice();
+        }
+    }
+
+    public static void Shuffle<T>(IList<T> list)
+    {
+        var rng = new System.Random();
+        var n = list.Count;
+        while (n > 1)
+        {
+            n--;
+            var k = rng.Next(n + 1);
+            var value = list[k];
+            list[k] = list[n];
+            list[n] = value;
+        }
+    }
+
     void ButtonPressed()
     {
 
