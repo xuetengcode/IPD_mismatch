@@ -58,6 +58,17 @@ public class StartStimulus : MonoBehaviour
     private bool firstinterval = false;
     private bool secondinterval = false;
     private List<InputDevice> devices = new List<InputDevice>();
+    private int curr_exp = 0;
+
+    private int exp_repeat = 10;
+    private List<object[]> exp_conditions = new List<object[]>();
+    private List<float> all_positions = new List<float> { -0.2f, -0.3f, -0.1f }; // z
+    private List<float> all_depths = new List<float> { 0.5f, 1.5f, 2f }; // scale z
+    private List<float> all_bases = new List<float> { 1f }; // scale y
+
+    private float pos_z;
+    private float scale_z;
+    private float scale_y;
     void GetDevice()
     {
         InputDevices.GetDevicesAtXRNode(controllerNode, devices);
@@ -71,8 +82,17 @@ public class StartStimulus : MonoBehaviour
         }
     }
 
+    void Start()
+    {
+        GenCondition();
+        //pos_z = (float)exp_conditions[curr_exp][0];
+        //Debug.Log($"==>: start {pos_z}\n");
+        //Debug.Log($"==>: curr_exp {curr_exp}, {(float)exp_conditions[0][0]}, {(float)exp_conditions[0][1]}, {(float)exp_conditions[0][2]}\n");
+    }
+
     void Awake()
     {
+        /*
         if (!Application.isEditor && IsHeadsetConnected())
         {
             filePath = Path.Combine("/sdcard/Download", "IPD-RescaleData.csv");
@@ -82,21 +102,8 @@ public class StartStimulus : MonoBehaviour
         {
             filePath = Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.Desktop), "IPD-RescaleData.csv");
         }
-
-        // Generating the prism 
-        Vector3 position = new Vector3(triPrismX, triPrismY, triPrismZ);
-        triPrism = Instantiate(triPrism, position, Quaternion.Euler(0, 0, triPrismRotateCCW));
-
-        Renderer objectRenderer = triPrism.GetComponent<Renderer>();
-        if (objectRenderer != null && triPrismMaterial != null)
-        {
-            objectRenderer.material = triPrismMaterial;
-        }
-
-        triPrism.transform.localScale = triPrismScale; 
-
-        initialTriPrismScaleZ = triPrismScale.z;
-
+        */
+        AddTriPrism();
         // Generating the other objects
         float width = cornerTopRight.x - cornerBottomLeft.x;
         float height = cornerTopRight.y - cornerBottomLeft.y;
@@ -152,6 +159,29 @@ public class StartStimulus : MonoBehaviour
             }
             else if (primaryButton == false)
             {
+                DestroyObjs();
+                AddTriPrism();
+
+
+                pos_z = (float)exp_conditions[curr_exp][0];
+                scale_z = (float)exp_conditions[curr_exp][1];
+                scale_y = (float)exp_conditions[curr_exp][2];
+
+                Debug.Log($"==>: button pressed {curr_exp}, {pos_z}, {scale_z}, {scale_y}\n");
+                curr_exp += 1;
+
+                GameObject[] allObjects = FindObjectsOfType<GameObject>();
+
+                // Loop through all GameObjects
+                foreach (GameObject obj in allObjects)
+                {
+                    if (obj.name.StartsWith("Triangle"))
+                    {
+                        obj.transform.localPosition = new Vector3(obj.transform.localPosition.x, obj.transform.localPosition.x, pos_z);
+                    }
+                }
+
+
                 AddBooks();
                 firstinterval = true;
                 secondinterval = false;
@@ -170,6 +200,8 @@ public class StartStimulus : MonoBehaviour
             }
             else if (secondaryButton == false)
             {
+                DestroyObjs();
+                AddTriPrism();
                 AddBooks();
                 firstinterval = false;
                 secondinterval = true;
@@ -181,7 +213,39 @@ public class StartStimulus : MonoBehaviour
 
     }
 
-    void DestroyBooks()
+    void AddTriPrism()
+    {
+        // Generating the prism 
+        Vector3 position = new Vector3(triPrismX, triPrismY, triPrismZ);
+        triPrism = Instantiate(triPrism, position, Quaternion.Euler(0, 0, triPrismRotateCCW));
+
+        Renderer objectRenderer = triPrism.GetComponent<Renderer>();
+        if (objectRenderer != null && triPrismMaterial != null)
+        {
+            objectRenderer.material = triPrismMaterial;
+        }
+
+        triPrism.transform.localScale = triPrismScale;
+
+        initialTriPrismScaleZ = triPrismScale.z;
+
+        
+        //pos_z = (float)exp_conditions[curr_exp][0];
+        //scale_z = (float)exp_conditions[curr_exp][1];
+        //scale_y = (float)exp_conditions[curr_exp][2];
+
+        //Debug.Log($"==>: curr_exp {curr_exp}, {(float)exp_conditions[0][1]}\n");
+        
+        //triPrism.transform.localPosition = new Vector3(triPrism.transform.localPosition.x, triPrism.transform.localPosition.x, pos_z);
+        //triPrism.transform.localScale = new Vector3(
+        //    triPrism.transform.localScale.x,
+        //    scale_y,
+        //    scale_z);
+        //curr_exp += 1;
+        
+    }
+
+    void DestroyObjs()
     {
         GameObject[] allObjects = FindObjectsOfType<GameObject>();
 
@@ -194,12 +258,16 @@ public class StartStimulus : MonoBehaviour
                 // Destroy the GameObject
                 Destroy(obj);
             }
+            if (obj.name.StartsWith("Triangle"))
+            {
+                // Destroy the GameObject
+                Destroy(obj);
+            }
         }
     }
     void AddBooks()
     {
-        Debug.Log($"==>: here \n");
-        DestroyBooks();
+        Debug.Log($"==>: add books \n");
         // Let's add books and objects
         float rowY = cornerTopRight.y;
 
@@ -361,6 +429,43 @@ public class StartStimulus : MonoBehaviour
         triPrism.transform.localScale -= triPrismScaleChange;
         float changeInScale = (triPrism.GetComponent<Renderer>().bounds.size.z - currentTriPrismZ) / 2;
         triPrism.transform.position += new Vector3(0.0f, 0.0f, -changeInScale);
+    }
+
+    public void GenCondition()
+    {
+        Debug.Log("abcabc");
+        for (int i_repeat = 0; i_repeat < exp_repeat; i_repeat++)
+        {
+            for (int i_g = 0; i_g < all_positions.Count; i_g++)
+            {
+                for (int i_d = 0; i_d < all_depths.Count; i_d++)
+                {
+                    for (int i_w = 0; i_w < all_bases.Count; i_w++)
+                    {
+                        
+                        Debug.Log($"==>: here {all_positions[i_g]}, {all_depths[i_d]}, {all_bases[i_w]}\n");
+                        exp_conditions.Add(new object[] { all_positions[i_g], all_depths[i_d], all_bases[i_w], (float)i_w });
+                    }
+                }
+            }
+        }
+        //Debug.Log("[log] at gencondition()");
+        ShuffleExpConditions(exp_conditions);
+        //PrintExpConditions(exp_conditions);
+    }
+
+    void ShuffleExpConditions(List<object[]> conditions)
+    {
+        System.Random rand = new System.Random();
+        int n = conditions.Count;
+        while (n > 1)
+        {
+            n--;
+            int k = rand.Next(n + 1);
+            var value = conditions[k];
+            conditions[k] = conditions[n];
+            conditions[n] = value;
+        }
     }
 
 }
