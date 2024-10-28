@@ -169,7 +169,7 @@ public class ExperimentScript : MonoBehaviour
         //Camera cam = GetComponent<Camera>();
         //stereoSeparation = cam.stereoSeparation;
 
-        file = new StreamWriter(Application.persistentDataPath + "/ipd_results.txt", true);
+        //file = new StreamWriter(Application.persistentDataPath + "/ipd_results.txt", true);
 
         Shuffle(angles);
 
@@ -220,7 +220,7 @@ public class ExperimentScript : MonoBehaviour
             }
             else if (primaryButton == false)
             {
-                //ButtonPressed();
+                ButtonPressed();
                 firstinterval = true;
                 secondinterval = false;
             }
@@ -271,7 +271,7 @@ public class ExperimentScript : MonoBehaviour
     }    
     void ButtonPressed()
     {
-
+        Debug.Log($"==>: here \n");
         switch (stage)
         {
             case Stage.First:

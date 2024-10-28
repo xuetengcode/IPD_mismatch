@@ -1,7 +1,9 @@
 using UnityEngine;
 using UnityEngine.XR;
+using System.Linq;
 using System.IO;
 using System.Collections.Generic;
+using static UnityEditorInternal.VersionControl.ListControl;
 
 public class StartStimulus : MonoBehaviour
 {
@@ -44,7 +46,30 @@ public class StartStimulus : MonoBehaviour
 
     private Vector3 triPrismScaleChange = new Vector3(0.0f, 0.0f, 0.1f);
 
-    public XRNode controllerNode;
+    [SerializeField]
+    public XRNode controllerNode = XRNode.RightHand;
+
+    float rowHeight;
+    private InputDevice device;
+    bool primaryButton = false;
+    bool secondaryButton = false;
+    bool LastStateA = false;
+    bool LastStateB = false;
+    private bool firstinterval = false;
+    private bool secondinterval = false;
+    private List<InputDevice> devices = new List<InputDevice>();
+    void GetDevice()
+    {
+        InputDevices.GetDevicesAtXRNode(controllerNode, devices);
+        device = devices.FirstOrDefault();
+    }
+    void OnEnable()
+    {
+        if (!device.isValid)
+        {
+            GetDevice();
+        }
+    }
 
     void Awake()
     {
@@ -77,7 +102,7 @@ public class StartStimulus : MonoBehaviour
         float height = cornerTopRight.y - cornerBottomLeft.y;
 
         //float proximityThreshold = Mathf.Max(triPrismScale.x, triPrismScale.y, triPrismScale.z) ;
-        float rowHeight = height / n_rows;
+        rowHeight = height / n_rows;
 
         float shelfLedgeY = cornerTopRight.y;
         for (int row = 0; row < n_rows - 1; row++)
@@ -97,7 +122,84 @@ public class StartStimulus : MonoBehaviour
 
             shelfLedge.transform.localScale = new Vector3(5f, 0.05f, 1.0f);
         }
+        AddBooks();
+    }
+    
+    void Update()
+    {
+        //Vector3 position = new Vector3(triPrismX, triPrismY, triPrismZ);
+        //triPrism.transform.position = position;
+        //triPrism.transform.localScale = triPrismScale; 
 
+        //AddBooks();
+
+        if (!device.isValid)
+        {
+            GetDevice();
+        }
+
+        bool primaryButton = false;
+
+        bool secondaryButton = false;
+
+        device.TryGetFeatureValue(CommonUsages.primaryButton, out primaryButton);
+
+        if (primaryButton != LastStateA)
+        {
+            if (primaryButton == true)
+            {
+                //button was pressed this frame
+            }
+            else if (primaryButton == false)
+            {
+                AddBooks();
+                firstinterval = true;
+                secondinterval = false;
+            }
+            //Set last known state of button
+            LastStateA = primaryButton;
+        }
+
+        device.TryGetFeatureValue(CommonUsages.secondaryButton, out secondaryButton);
+
+        if (secondaryButton != LastStateB)
+        {
+            if (secondaryButton == true)
+            {
+                //button was pressed this frame
+            }
+            else if (secondaryButton == false)
+            {
+                AddBooks();
+                firstinterval = false;
+                secondinterval = true;
+            }
+            //Set last known state of button
+            LastStateB = secondaryButton;
+        }
+        
+
+    }
+
+    void DestroyBooks()
+    {
+        GameObject[] allObjects = FindObjectsOfType<GameObject>();
+
+        // Loop through all GameObjects
+        foreach (GameObject obj in allObjects)
+        {
+            // Check if the GameObject's name starts with "rotated-book"
+            if (obj.name.StartsWith("rotated-book"))
+            {
+                // Destroy the GameObject
+                Destroy(obj);
+            }
+        }
+    }
+    void AddBooks()
+    {
+        Debug.Log($"==>: here \n");
+        DestroyBooks();
         // Let's add books and objects
         float rowY = cornerTopRight.y;
 
@@ -107,12 +209,12 @@ public class StartStimulus : MonoBehaviour
         // float triPrismXMin = triPrismPosition.x - triPrismWidth / 2 - Mathf.Abs(Mathf.Sin(triPrismRotateCCW * Mathf.Deg2Rad) * triPrismHeight / 2)  ;
         // float triPrismXMax = triPrismPosition.x + triPrismWidth / 2 + Mathf.Abs(Mathf.Sin(triPrismRotateCCW * Mathf.Deg2Rad) * triPrismHeight / 2)  ;
 
-        for (int row = 0; row < n_rows; row++) 
+        for (int row = 0; row < n_rows; row++)
         {
             rowY -= rowHeight;
             float currentXPosition = cornerBottomLeft.x + 0.3f;
-            float rowCenterY = rowY + 0.5f *rowHeight ; 
-            while (currentXPosition < cornerTopRight.x - 0.5f) 
+            float rowCenterY = rowY + 0.5f * rowHeight;
+            while (currentXPosition < cornerTopRight.x - 0.5f)
             {
                 //float currentYPostion = rowY + (rowHeight/2);
                 if (Random.value >= wallSparseness)
@@ -125,10 +227,10 @@ public class StartStimulus : MonoBehaviour
                         // }
                         // more buffer to reduce book overlap but it adds too much space
 
-                        if (currentXPosition < triPrismX - triPrism.GetComponent<Renderer>().bounds.size.x * 1.2f || 
-                            currentXPosition > triPrismX + triPrism.GetComponent<Renderer>().bounds.size.x * 1.2f || 
-                            rowCenterY >  triPrismY + triPrism.GetComponent<Renderer>().bounds.size.y * 0.75f || 
-                            rowCenterY < triPrismY - triPrism.GetComponent<Renderer>().bounds.size.y * 0.75f ) 
+                        if (currentXPosition < triPrismX - triPrism.GetComponent<Renderer>().bounds.size.x * 1.2f ||
+                            currentXPosition > triPrismX + triPrism.GetComponent<Renderer>().bounds.size.x * 1.2f ||
+                            rowCenterY > triPrismY + triPrism.GetComponent<Renderer>().bounds.size.y * 0.75f ||
+                            rowCenterY < triPrismY - triPrism.GetComponent<Renderer>().bounds.size.y * 0.75f)
                         {
 
                             GameObject book = Instantiate(bookMeshes[Random.Range(0, bookMeshes.Length)]);
@@ -141,23 +243,23 @@ public class StartStimulus : MonoBehaviour
 
                             // book.transform.rotation = Quaternion.Euler(0, 0, rotationAngle);
 
-                            float bookHeight = book.GetComponent<Renderer>().bounds.size.y ;
+                            float bookHeight = book.GetComponent<Renderer>().bounds.size.y;
 
-                            float bookScaleZ = Random.Range(0.7f * rowHeight / bookHeight , (rowHeight - 0.1f) / bookHeight )  ;
-                            float bookScaleY = Mathf.Min( bookScaleZ + Random.Range( 0 , 0.7f * (rowHeight - 0.1f) / bookHeight), (rowHeight - 0.1f) / bookHeight ) ; // Maximum height is shelf height minus the ledge thickness
-                            float bookScaleX = bookScaleZ ;
+                            float bookScaleZ = Random.Range(0.7f * rowHeight / bookHeight, (rowHeight - 0.1f) / bookHeight);
+                            float bookScaleY = Mathf.Min(bookScaleZ + Random.Range(0, 0.7f * (rowHeight - 0.1f) / bookHeight), (rowHeight - 0.1f) / bookHeight); // Maximum height is shelf height minus the ledge thickness
+                            float bookScaleX = bookScaleZ;
 
                             book.transform.localScale = new Vector3(bookScaleX, bookScaleY, bookScaleZ);
 
                             if (rotationAngle != -90f)
                             {
-                                currentXPosition += Mathf.Abs(Mathf.Sin((rotationAngle + 90f ) * Mathf.Deg2Rad)) * (book.GetComponent<Renderer>().bounds.size.z   ) / 2  ;
+                                currentXPosition += Mathf.Abs(Mathf.Sin((rotationAngle + 90f) * Mathf.Deg2Rad)) * (book.GetComponent<Renderer>().bounds.size.z) / 2;
                             }
-                            float currentYPosition = rowY + book.GetComponent<Renderer>().bounds.size.y  / 2 ;
+                            float currentYPosition = rowY + book.GetComponent<Renderer>().bounds.size.y / 2;
 
-                            float currentZPosition = Random.Range(-0.2f, -0.3f) - book.GetComponent<Renderer>().bounds.size.z  / 2;
+                            float currentZPosition = Random.Range(-0.2f, -0.3f) - book.GetComponent<Renderer>().bounds.size.z / 2;
 
-                            book.transform.position = new Vector3(currentXPosition, 
+                            book.transform.position = new Vector3(currentXPosition,
                                                                 currentYPosition,
                                                                 currentZPosition); // Z needs to be based on scale (different depth)
 
@@ -165,18 +267,18 @@ public class StartStimulus : MonoBehaviour
 
                             Renderer bookRenderer = book.GetComponent<Renderer>();
 
-                            currentXPosition += (book.GetComponent<Renderer>().bounds.size.x );
+                            currentXPosition += (book.GetComponent<Renderer>().bounds.size.x);
                         }
                         else
-                        { 
-                            currentXPosition += 0.2f; 
+                        {
+                            currentXPosition += 0.2f;
                         }
                     }
 
                     else
                     {
                         GameObject book = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                    
+
                         float rotationAngle = 0f;
                         if (Random.value < 0.5f)
                         {
@@ -186,21 +288,21 @@ public class StartStimulus : MonoBehaviour
                         book.transform.rotation = Quaternion.Euler(0, 0, rotationAngle);
 
                         float bookScaleX = Random.Range(0.02f, 0.1f);
-                        float bookScaleY = Random.Range(1.0f , 2.5f) / n_rows;
+                        float bookScaleY = Random.Range(1.0f, 2.5f) / n_rows;
                         float bookScaleZ = Random.Range(0.1f, 0.4f);
 
                         book.transform.localScale = new Vector3(bookScaleX, bookScaleY, bookScaleZ);
 
                         if (rotationAngle != 0)
                         {
-                            currentXPosition += Mathf.Sin(rotationAngle * Mathf.Deg2Rad) * (book.GetComponent<Renderer>().bounds.size.x  * bookScaleX ) + 0.1f ;
+                            currentXPosition += Mathf.Sin(rotationAngle * Mathf.Deg2Rad) * (book.GetComponent<Renderer>().bounds.size.x * bookScaleX) + 0.1f;
                         }
 
-                        float currentYPosition = rowY + book.GetComponent<Renderer>().bounds.size.y * bookScaleY / 2 + 0.1f ;
+                        float currentYPosition = rowY + book.GetComponent<Renderer>().bounds.size.y * bookScaleY / 2 + 0.1f;
 
-                        float currentZPosition = -0.1f - book.GetComponent<Renderer>().bounds.size.z  * bookScaleZ / 2;
+                        float currentZPosition = -0.1f - book.GetComponent<Renderer>().bounds.size.z * bookScaleZ / 2;
 
-                        book.transform.position = new Vector3(currentXPosition, 
+                        book.transform.position = new Vector3(currentXPosition,
                                                             currentYPosition,
                                                             currentZPosition); // Z needs to be based on scale (different depth)
 
@@ -211,7 +313,7 @@ public class StartStimulus : MonoBehaviour
                             bookRenderer.material = randomMaterial;
                         }
 
-                        currentXPosition += (book.GetComponent<Renderer>().bounds.size.x  * bookScaleX) * 2 + 0.1f;
+                        currentXPosition += (book.GetComponent<Renderer>().bounds.size.x * bookScaleX) * 2 + 0.1f;
                     }
                 }
                 // Leave some space in the row 
@@ -221,50 +323,6 @@ public class StartStimulus : MonoBehaviour
                 }
             }
         }
-    }
-
-    void Update()
-    {
-        //Vector3 position = new Vector3(triPrismX, triPrismY, triPrismZ);
-        //triPrism.transform.position = position;
-        //triPrism.transform.localScale = triPrismScale; 
-
-        if (!Application.isEditor)
-        { 
-            InputDevice device = InputDevices.GetDeviceAtXRNode(controllerNode);
-
-            if (device.TryGetFeatureValue(CommonUsages.primary2DAxis, out Vector2 axisValue))
-            {
-                float joystickInput = axisValue.y;
-
-                if (joystickInput > 0)
-                {
-                    if (triPrism.transform.position.z - triPrism.GetComponent<Renderer>().bounds.size.z/2 > -2)
-                    {
-                        ScaleUp();
-                    }
-                }
-
-                else if (joystickInput < 0)
-                {
-                    if (triPrism.transform.localScale.z - triPrismScaleChange.z > 0)
-                    {
-                        ScaleDown();
-                    }
-                }
-
-                if (device.TryGetFeatureValue(CommonUsages.primaryButton, out bool buttonValue) && buttonValue)
-                {
-                    SaveTriPrismScale();
-                }
-            }   
-        }
-        
-        
-
-        
-        
-
     }
 
     private bool IsHeadsetConnected()
