@@ -10,6 +10,8 @@ public class StartStimulus : MonoBehaviour
     public float triPrismY;
 
     public float triPrismZ; 
+
+    public int seed;
     
     public float triPrismRotateCCW;
 
@@ -49,6 +51,11 @@ public class StartStimulus : MonoBehaviour
     private List<GameObject> instantiatedBooks = new List<GameObject>();
     private List<GameObject> instantiatedShelves = new List<GameObject>();
 
+    private bool isButtonPressed = false ; 
+
+    private int seedRecorded; 
+
+
     void Awake()
     {
         InstantiateBooksPrism();
@@ -70,7 +77,7 @@ public class StartStimulus : MonoBehaviour
 
                 if (joystickInput > 0)
                 {
-                    if (triPrism.transform.position.z - triPrism.GetComponent<Renderer>().bounds.size.z/2 > -2)
+                    if (triPrism.transform.position.z - triPrism.GetComponent<Renderer>().bounds.size.z/2 > -0.75)
                     {
                         ScaleUp();
                     }
@@ -84,24 +91,25 @@ public class StartStimulus : MonoBehaviour
                     }
                 }
 
-                if (device.TryGetFeatureValue(CommonUsages.primaryButton, out bool buttonValue) && buttonValue)
+                if (device.TryGetFeatureValue(CommonUsages.primaryButton, out bool buttonValue) && buttonValue && !isButtonPressed)
                 {
                     SaveTriPrismScale();
                     InstantiateBooksPrism();
+                    isButtonPressed = true ;
+                    Invoke("ResetButtonState", 1f);
+                    
+                    
                 }
+
             }   
         }
-        
-        
-
-        
         
         // When not using VR (for testing)
         else
         {
             if (Input.GetKeyDown(KeyCode.UpArrow)) 
             {
-                if (triPrism.transform.position.z - triPrism.GetComponent<Renderer>().bounds.size.z/2 > -2)
+                if (triPrism.transform.position.z - triPrism.GetComponent<Renderer>().bounds.size.z/2 > -0.75)
                 {
                     ScaleUp();
                 }
@@ -116,18 +124,37 @@ public class StartStimulus : MonoBehaviour
                 }
             }
 
-            if (Input.GetKeyDown(KeyCode.S))
+            if (Input.GetKeyDown(KeyCode.S) )
             {
                 SaveTriPrismScale();
                 InstantiateBooksPrism();
+                
             }
         }
 
     }
 
+    private void ResetButtonState()
+    {
+        isButtonPressed = false ; 
+    }
+    
     private void InstantiateBooksPrism()
     {
         
+        if (seed != 0)
+        {
+            Random.InitState(seed);
+            seedRecorded = seed;
+        }
+
+        else
+        {
+            int dynamicSeed = Random.Range(-100, 100);
+            Random.InitState(dynamicSeed);
+            Debug.Log($"Seed: {dynamicSeed}");
+            seedRecorded = dynamicSeed; 
+        }
 
         if (!Application.isEditor && IsHeadsetConnected())
         {
@@ -158,10 +185,10 @@ public class StartStimulus : MonoBehaviour
             objectRenderer.material = triPrismMaterial;
         }
 
-        float jitteredTriPrismScaleZ = Random.Range(0.7f, 1.0f);
+        float jitteredTriPrismScaleZ = Random.Range(0.3f, 1.0f);
         triPrism.transform.localScale = new Vector3(triPrismScale.x, triPrismScale.y, 1.0f); 
         float basicTriPrismScale = triPrism.GetComponent<Renderer>().bounds.size.z;
-        triPrism.transform.localScale = new Vector3(triPrismScale.x, triPrismScale.y, 1.0f); 
+        triPrism.transform.localScale = new Vector3(triPrismScale.x, triPrismScale.y, jitteredTriPrismScaleZ); 
         float triPrismZScaleOffset = (triPrism.GetComponent<Renderer>().bounds.size.z - basicTriPrismScale) / 2;
         triPrism.transform.position += new Vector3(0.0f, 0.0f, -triPrismZScaleOffset);
 
@@ -241,7 +268,7 @@ public class StartStimulus : MonoBehaviour
         {
             rowY -= rowHeight;
             float currentXPosition = cornerBottomLeft.x + 0.3f;
-            float rowCenterY = rowY + 0.5f *rowHeight ; 
+            float rowCenterY = rowY + 0.5f *rowHeight + 0.0125f ; // 0.0125 is half the shelf thickness
 
 
 
@@ -379,11 +406,11 @@ public class StartStimulus : MonoBehaviour
     private void SaveTriPrismScale()
     {
         finalTriPrismScaleZ = triPrism.transform.localScale.z;
-        string csvEntry = $"{System.DateTime.Now}, {finalTriPrismScaleZ}, {triPrism.GetComponent<Renderer>().bounds.size.z}, {triPrism.GetComponent<Renderer>().bounds.size.y}, {triPrism.GetComponent<Renderer>().bounds.size.z / triPrism.GetComponent<Renderer>().bounds.size.y}\n";
+        string csvEntry = $"{System.DateTime.Now}, {finalTriPrismScaleZ}, {triPrism.GetComponent<Renderer>().bounds.size.z}, {triPrism.GetComponent<Renderer>().bounds.size.y}, {triPrism.GetComponent<Renderer>().bounds.size.z / triPrism.GetComponent<Renderer>().bounds.size.y}, {seedRecorded}\n";
 
         if (!File.Exists(filePath))
         {
-            File.WriteAllText(filePath, "Timestamp, Final TriPrism Scale Z, Height, Base, Height:Base Ratio\n");
+            File.WriteAllText(filePath, "Timestamp, Final TriPrism Scale Z, Height, Base, Height:Base Ratio, Random Seed\n");
         }
 
         File.AppendAllText(filePath, csvEntry);

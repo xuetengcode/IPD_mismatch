@@ -35,10 +35,10 @@ RenderSettings:
   m_DefaultReflectionMode: 0
   m_DefaultReflectionResolution: 128
   m_ReflectionBounces: 1
-  m_ReflectionIntensity: 1
+  m_ReflectionIntensity: 0.287
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 705507994}
-  m_IndirectSpecularColor: {r: 0.1802516, g: 0.22567071, b: 0.30687967, a: 1}
+  m_IndirectSpecularColor: {r: 0.05173221, g: 0.064767495, b: 0.08807447, a: 0.287}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -1382,7 +1382,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: d1647d7b4c2514e1ba00ad7a69c867fa, type: 2}
+  - {fileID: 2100000, guid: d9822ddbccb1b4bb196f99b65ac414ee, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -2371,7 +2371,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: d1647d7b4c2514e1ba00ad7a69c867fa, type: 2}
+  - {fileID: 2100000, guid: 166ad16c446f24f25986b7431581010c, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -3288,14 +3288,15 @@ MonoBehaviour:
   triPrismX: 0
   triPrismY: 0
   triPrismZ: -0.3
+  seed: 0
   triPrismRotateCCW: 90
-  triPrismMaterial: {fileID: 2100000, guid: 105b3c4bdb8ee4148abf56b0a9fe8236, type: 2}
+  triPrismMaterial: {fileID: 2100000, guid: 3ae006ab3e41d47b2b4e126fcac56197, type: 2}
   triPrismScale: {x: 0.75, y: 2}
   cornerBottomLeft: {x: -2.5, y: -1.5, z: 0}
   cornerTopRight: {x: 2.5, y: 2.375, z: 0}
   wallSparseness: 0
   n_rows: 9
-  shelfMaterial: {fileID: 2100000, guid: d1647d7b4c2514e1ba00ad7a69c867fa, type: 2}
+  shelfMaterial: {fileID: 2100000, guid: d9822ddbccb1b4bb196f99b65ac414ee, type: 2}
   distanceToTriPrism: 0.2
   otherObjectsZInset: -0.35
   bookMaterials: []
@@ -3493,7 +3494,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: d1647d7b4c2514e1ba00ad7a69c867fa, type: 2}
+  - {fileID: 2100000, guid: 166ad16c446f24f25986b7431581010c, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -3697,7 +3698,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: d1647d7b4c2514e1ba00ad7a69c867fa, type: 2}
+  - {fileID: 2100000, guid: d9822ddbccb1b4bb196f99b65ac414ee, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
