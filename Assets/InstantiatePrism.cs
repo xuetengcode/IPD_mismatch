@@ -42,7 +42,7 @@ public class StartStimulus : MonoBehaviour
 
     // For method of adjustment
 
-    private Vector3 triPrismScaleChange = new Vector3(0.0f, 0.0f, 0.1f);
+    private Vector3 triPrismScaleChange = new Vector3(0.0f, 0.0f, 0.05f);
 
     public XRNode controllerNode;
 
@@ -145,7 +145,8 @@ public class StartStimulus : MonoBehaviour
             Destroy(triPrism);
         }
 
-        float jitterTriPrismY = Random.Range(-0.03f, 0.03f);
+        float jitterTriPrismY = Random.Range(-0.01f, 0.02f);
+        float jitterTriPrismZ = Random.Range(-0.04f, 0.02f);
         Vector3 position = new Vector3(triPrismX, triPrismY + jitterTriPrismY, triPrismZ);
         triPrism = Instantiate(triPrism, position, Quaternion.Euler(0, 0, triPrismRotateCCW));
 
@@ -157,10 +158,10 @@ public class StartStimulus : MonoBehaviour
             objectRenderer.material = triPrismMaterial;
         }
 
-        float jitteredTriPrismScaleZ = Random.Range(0.5f, 1.5f);
+        float jitteredTriPrismScaleZ = Random.Range(0.7f, 1.0f);
         triPrism.transform.localScale = new Vector3(triPrismScale.x, triPrismScale.y, 1.0f); 
         float basicTriPrismScale = triPrism.GetComponent<Renderer>().bounds.size.z;
-        triPrism.transform.localScale = new Vector3(triPrismScale.x, triPrismScale.y, jitteredTriPrismScaleZ); 
+        triPrism.transform.localScale = new Vector3(triPrismScale.x, triPrismScale.y, 1.0f); 
         float triPrismZScaleOffset = (triPrism.GetComponent<Renderer>().bounds.size.z - basicTriPrismScale) / 2;
         triPrism.transform.position += new Vector3(0.0f, 0.0f, -triPrismZScaleOffset);
 
@@ -196,7 +197,7 @@ public class StartStimulus : MonoBehaviour
         {
             float shelfLedgeX = 0f;
             shelfLedgeY -= rowHeight ;
-            Vector3 shelfLedgePosition = new Vector3(shelfLedgeX, shelfLedgeY, -0.45f);
+            Vector3 shelfLedgePosition = new Vector3(shelfLedgeX, shelfLedgeY, -0.3f);
 
             GameObject shelfLedge = GameObject.CreatePrimitive(PrimitiveType.Cube);
             instantiatedShelves.Add(shelfLedge);
@@ -208,7 +209,7 @@ public class StartStimulus : MonoBehaviour
                     shelfRenderer.material = shelfMaterial;
                 }
 
-            shelfLedge.transform.localScale = new Vector3(5f, 0.05f, 1.0f);
+            shelfLedge.transform.localScale = new Vector3(5f, 0.025f, 0.5f);
         }
 
         // Let's add books and objects
