@@ -1,3 +1,2 @@
-Bookshelf generates "books" (random scale, random rotation) at play. 
-The position and scale of the triangular prism can be updated.
-Next time, I will change the "books" from cubes to custom objects. :D
+Bookshelf generates books at random positions and with rotations.
+Use the scene named RevisedScene when building the apk or testing the code. 
