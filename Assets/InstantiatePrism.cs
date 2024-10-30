@@ -158,7 +158,7 @@ public class StartStimulus : MonoBehaviour
 
         if (!Application.isEditor && IsHeadsetConnected())
         {
-            filePath = Path.Combine("/sdcard/Download", "IPD-RescaleData.csv");
+            filePath = Path.Combine("/sdcard/Download", "IPD-RescaleData-fromQuest.csv");
         }
         
         else
