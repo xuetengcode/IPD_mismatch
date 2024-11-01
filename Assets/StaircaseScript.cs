@@ -81,37 +81,66 @@ public class StartStaircase : MonoBehaviour
         { 
             InputDevice device = InputDevices.GetDeviceAtXRNode(controllerNode);
 
-            if (device.TryGetFeatureValue(CommonUsages.primary2DAxis, out Vector2 axisValue))
+            // if (device.TryGetFeatureValue(CommonUsages.primary2DAxis, out Vector2 axisValue))
+            // {
+            //     float joystickInput = axisValue.y;
+
+            //     if (joystickInput > 0)
+            //     {
+            //         if (triPrism.transform.position.z - triPrism.GetComponent<Renderer>().bounds.size.z/2 > -0.75)
+            //         {
+            //             ScaleUp();
+            //         }
+            //     }
+
+            //     else if (joystickInput < 0)
+            //     {
+            //         if (triPrism.transform.localScale.z - triPrismScaleChange.z > 0)
+            //         {
+            //             ScaleDown();
+            //         }
+            //     }
+
+            if (device.TryGetFeatureValue(CommonUsages.primaryButton, out bool buttonValue) && buttonValue && !isButtonPressed)
             {
-                float joystickInput = axisValue.y;
+                SaveTriPrismScale();
 
-                if (joystickInput > 0)
+                if (triangleHeight >= triangleBase)
                 {
-                    if (triPrism.transform.position.z - triPrism.GetComponent<Renderer>().bounds.size.z/2 > -0.75)
-                    {
-                        ScaleUp();
-                    }
+                    // Incorrect height is longer but response is that base is longer
+                    isScalingUp = true ;
+                }
+                else
+                {
+                    isScalingUp = false ; 
                 }
 
-                else if (joystickInput < 0)
-                {
-                    if (triPrism.transform.localScale.z - triPrismScaleChange.z > 0)
-                    {
-                        ScaleDown();
-                    }
-                }
+                InstantiateBooksPrism();
+                isButtonPressed = true ;
+                Invoke("ResetButtonState", 1f);
+                
+            }
 
-                if (device.TryGetFeatureValue(CommonUsages.primaryButton, out bool buttonValue) && buttonValue && !isButtonPressed)
-                {
-                    SaveTriPrismScale();
-                    InstantiateBooksPrism();
-                    isButtonPressed = true ;
-                    Invoke("ResetButtonState", 1f);
-                    
-                    
-                }
+            if (device.TryGetFeatureValue(CommonUsages.secondaryButton, out bool secondaryButtonValue) && secondaryButtonValue && !isButtonPressed)
+            {
+                SaveTriPrismScale();
 
-            }   
+                if (triangleHeight >= triangleBase)
+                {
+                    // Correct
+                    isScalingUp = false ;
+                }
+                else
+                {
+                    isScalingUp = true ; 
+                }
+                InstantiateBooksPrism();
+                isButtonPressed = true ;
+                Invoke("ResetButtonState", 1f);
+
+            }
+
+            // }   
 
             if (device.TryGetFeatureValue(CommonUsages.devicePosition, out Vector3 position) && device.TryGetFeatureValue(CommonUsages.deviceRotation, out Quaternion rotation))
             {
@@ -120,7 +149,7 @@ public class StartStaircase : MonoBehaviour
                     File.WriteAllText(headTrackingDataFilePath, "Timestamp, PositionX, PositionY, PositionZ, RotationX, RotationY, RotationZ, RotationW\n");
                 }
 
-                string headTrackingCsvEntry = $"{Time.time},{position.x},{position.y},{position.z},{rotation.x},{rotation.y},{rotation.z},{rotation.w}";
+                string headTrackingCsvEntry = $"{System.DateTime.Now},{position.x},{position.y},{position.z},{rotation.x},{rotation.y},{rotation.z},{rotation.w}\n";
                 File.AppendAllText(headTrackingDataFilePath, headTrackingCsvEntry);
             }
 
@@ -161,6 +190,7 @@ public class StartStaircase : MonoBehaviour
                     isScalingUp = true ; 
                 }
                 InstantiateBooksPrism();
+                
         
                 
             }
