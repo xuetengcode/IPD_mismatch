@@ -15,11 +15,14 @@ EditorBuildSettings:
     path: Assets/MenuScene.unity
     guid: 52343a952a01e4b45abc2aead78dc724
   - enabled: 1
-    path: Assets/Scenes/RevisedScene.unity
-    guid: eb8f5a0bec75f46e492de894fb5161a6
-  - enabled: 0
+    path: Assets/MenuSceneAttempt2.unity
+    guid: 13e532df38385416f90511a44b271a55
+  - enabled: 1
     path: Assets/Scenes/StaircaseScene.unity
     guid: 5c1dfecd5b51a459ea7d9bfc5d23f135
+  - enabled: 1
+    path: Assets/Scenes/RevisedScene.unity
+    guid: eb8f5a0bec75f46e492de894fb5161a6
   m_configObjects:
     Unity.XR.Oculus.Settings: {fileID: 11400000, guid: d3966f700d74a4d32b40f90639a82291, type: 2}
     com.unity.xr.arfoundation.simulation_settings: {fileID: 11400000, guid: e0d9af06390654669a8a529e22a81dac, type: 2}
