@@ -3,6 +3,7 @@ using UnityEngine.XR;
 using System.IO;
 using System.Collections.Generic;
 
+
 public class StartStaircase : MonoBehaviour
 {
     public GameObject triPrism; 
@@ -55,14 +56,27 @@ public class StartStaircase : MonoBehaviour
 
     private int seedRecorded; 
 
-    private bool? isScalingUp;
+    private bool? S1IsScalingUp;
 
-    private float triangleHeight ;
-    private float triangleBase ;
+    private bool? S2IsScalingUp;
+
+    private bool S1Active = true; // If false, S2 is Active
+
+    private float S1TriangleHeight ;
+    private float S1TriangleBase ;
+    private float S2TriangleHeight ;
+    private float S2TriangleBase ;
     private float TriPrismScaleZ ; 
+
+    private float S1TriPrismScaleZ;
+    private float S2TriPrismScaleZ;
+
+    private int staircaseNum;
 
     private float trialStartTime ; 
     private float trialResponseTime ; 
+
+    private string response;
 
 
     void Awake()
@@ -81,39 +95,19 @@ public class StartStaircase : MonoBehaviour
         { 
             InputDevice device = InputDevices.GetDeviceAtXRNode(controllerNode);
 
-            // if (device.TryGetFeatureValue(CommonUsages.primary2DAxis, out Vector2 axisValue))
-            // {
-            //     float joystickInput = axisValue.y;
-
-            //     if (joystickInput > 0)
-            //     {
-            //         if (triPrism.transform.position.z - triPrism.GetComponent<Renderer>().bounds.size.z/2 > -0.75)
-            //         {
-            //             ScaleUp();
-            //         }
-            //     }
-
-            //     else if (joystickInput < 0)
-            //     {
-            //         if (triPrism.transform.localScale.z - triPrismScaleChange.z > 0)
-            //         {
-            //             ScaleDown();
-            //         }
-            //     }
-
             if (device.TryGetFeatureValue(CommonUsages.primaryButton, out bool buttonValue) && buttonValue && !isButtonPressed)
             {
                 SaveTriPrismScale();
 
-                if (triangleHeight >= triangleBase)
-                {
-                    // Incorrect height is longer but response is that base is longer
-                    isScalingUp = true ;
-                }
-                else
-                {
-                    isScalingUp = false ; 
-                }
+                // if (triangleHeight >= triangleBase)
+                // {
+                //     // Incorrect height is longer but response is that base is longer
+                //     // isScalingUp = true ;
+                // }
+                // else
+                // {
+                //     // isScalingUp = false ; 
+                // }
 
                 InstantiateBooksPrism();
                 isButtonPressed = true ;
@@ -125,15 +119,15 @@ public class StartStaircase : MonoBehaviour
             {
                 SaveTriPrismScale();
 
-                if (triangleHeight >= triangleBase)
-                {
-                    // Correct
-                    isScalingUp = false ;
-                }
-                else
-                {
-                    isScalingUp = true ; 
-                }
+                // if (triangleHeight >= triangleBase)
+                // {
+                //     // Correct
+                //     // isScalingUp = false ;
+                // }
+                // else
+                // {
+                //     // isScalingUp = true ; 
+                // }
                 InstantiateBooksPrism();
                 isButtonPressed = true ;
                 Invoke("ResetButtonState", 1f);
@@ -159,36 +153,26 @@ public class StartStaircase : MonoBehaviour
         // When not using VR (for testing)
         else
         {
-            // if (Input.GetKeyDown(KeyCode.UpArrow)) 
-            // {
-            //     if (triPrism.transform.position.z - triPrism.GetComponent<Renderer>().bounds.size.z/2 > -0.75)
-            //     {
-            //         ScaleUp();
-            //     }
-                
-            // }
-            
-            // if (Input.GetKeyDown(KeyCode.DownArrow))
-            // {
-            //     if (triPrism.transform.localScale.z - triPrismScaleChange.z > 0)
-            //     {
-            //         ScaleDown();
-            //     }
-            // }
 
             if (Input.GetKeyDown(KeyCode.H) )
             {
+                response = "H";
                 SaveTriPrismScale();
 
-                if (triangleHeight >= triangleBase)
+                if (S1Active)
                 {
-                    // Correct
-                    isScalingUp = false ;
+                    S1IsScalingUp = false;
+                    S1Active = false;
                 }
+
                 else
                 {
-                    isScalingUp = true ; 
+                    S2IsScalingUp = false;   
+
+                    S1Active = true;               
                 }
+
+
                 InstantiateBooksPrism();
                 
         
@@ -197,16 +181,21 @@ public class StartStaircase : MonoBehaviour
 
             if (Input.GetKeyDown(KeyCode.B) )
             {
+                response="B";
                 SaveTriPrismScale();
 
-                if (triangleHeight >= triangleBase)
+                if (S1Active)
                 {
-                    // Incorrect height is longer but response is that base is longer
-                    isScalingUp = true ;
+                    S1IsScalingUp = true;
+
+                    S1Active = false;
                 }
+
                 else
                 {
-                    isScalingUp = false ; 
+                    S2IsScalingUp = true;
+
+                    S1Active = true;                  
                 }
 
                 InstantiateBooksPrism();
@@ -233,7 +222,7 @@ public class StartStaircase : MonoBehaviour
 
         else
         {
-            int dynamicSeed = Random.Range(-100, 100);
+            int dynamicSeed = (int)(System.DateTime.Now.Ticks % 10000);
             Random.InitState(dynamicSeed);
             Debug.Log($"Seed: {dynamicSeed}");
             seedRecorded = dynamicSeed; 
@@ -241,13 +230,13 @@ public class StartStaircase : MonoBehaviour
 
         if (!Application.isEditor && IsHeadsetConnected())
         {
-            filePath = Path.Combine("/sdcard/Download", "IPD-RescaleData-fromQuest.csv");
+            filePath = Path.Combine("/sdcard/Download", "IPD-Staircase-fromQuest.csv");
             headTrackingDataFilePath = Path.Combine("/sdcard/Download", "HeadTrackingData.csv");
         }
         
         else
         {
-            filePath = Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.Desktop), "IPD-RescaleData.csv");
+            filePath = Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.Desktop), "IPD-Staircase.csv");
         }
 
         // Generating the prism 
@@ -269,45 +258,74 @@ public class StartStaircase : MonoBehaviour
             objectRenderer.material = triPrismMaterial;
         }
 
-        if (isScalingUp == null)
+        if (S1IsScalingUp == null)
         {
-            //TriPrismScaleZ = Random.Range(0.3f, 1.0f);
-            List<float> startingScales = new List<float> { 0.3f, 0.35f, 1.3f, 1.5f };
-            int startingScaleIdx = Random.Range(0, startingScales.Count);
-            TriPrismScaleZ = startingScales[ startingScaleIdx ];
-        }
-        if (isScalingUp == true)
-        {
-            if (triPrism.transform.position.z - triPrism.GetComponent<Renderer>().bounds.size.z/2 > -0.75)
-            {
-                TriPrismScaleZ += 0.01f ; 
-            }
+
+            float startUpDownRandom = Random.Range(0f, 1f);
+            Debug.Log($"StartUpDown: {startUpDownRandom}");
             
-        }
-        else if (isScalingUp == false)
-        {
-            if (triPrism.transform.localScale.z - triPrismScaleChange.z > 0)
+            if (startUpDownRandom <= 0.5)
             {
-                TriPrismScaleZ -= 0.01f ; 
+                S1TriPrismScaleZ = Random.Range(0.4f, 0.5f); // 16-20cm
+                S2TriPrismScaleZ = Random.Range(1.3f, 1.4f); // 52-56cm
+            } 
+            else
+            {
+                S1TriPrismScaleZ = Random.Range(1.3f, 1.4f);
+                S2TriPrismScaleZ = Random.Range(0.4f, 0.5f); 
             }
+
+            TriPrismScaleZ = S1TriPrismScaleZ; 
+
+        }
+
+        if (S2IsScalingUp == null && S1Active == false)
+        {
+            TriPrismScaleZ = S2TriPrismScaleZ; 
+        }
+
+        if (S1Active == true && S1IsScalingUp == true)
+        {
+            S1TriPrismScaleZ += triPrismScaleChange.z;
+            TriPrismScaleZ = S1TriPrismScaleZ;
+        }
+        else if (S1Active == true && S1IsScalingUp == false)
+        {
+            S1TriPrismScaleZ -= triPrismScaleChange.z;
+            TriPrismScaleZ = S1TriPrismScaleZ;
+        }
+        else if (S1Active == false && S2IsScalingUp == true)
+        {
+            S2TriPrismScaleZ += triPrismScaleChange.z;
+            TriPrismScaleZ = S2TriPrismScaleZ;
+        }
+        else if (S1Active == false && S2IsScalingUp == false)
+        {
+            S2TriPrismScaleZ -= triPrismScaleChange.z;
+            TriPrismScaleZ = S2TriPrismScaleZ;
         }
        
         triPrism.transform.localScale = new Vector3(triPrismScale.x, triPrismScale.y, 1.0f); 
-        float basicTriPrismScale = triPrism.GetComponent<Renderer>().bounds.size.z;
+        float basicTriPrismScale = triPrism.GetComponent<Renderer>().bounds.size.z; 
+        // This just fixes base at a certain location it's not necessary
         triPrism.transform.localScale = new Vector3(triPrismScale.x, triPrismScale.y, TriPrismScaleZ); 
         float triPrismZScaleOffset = (triPrism.GetComponent<Renderer>().bounds.size.z - basicTriPrismScale) / 2;
         triPrism.transform.position += new Vector3(0.0f, 0.0f, -triPrismZScaleOffset);
 
+        // triangleHeight = triPrism.GetComponent<Renderer>().bounds.size.z ; 
 
-        // float triangleHeight = triPrism.GetComponent<Renderer>().bounds.size.z ; 
-        // float triangleBase = triPrism.GetComponent<Renderer>().bounds.size.y ;
+        // triangleBase = triPrism.GetComponent<Renderer>().bounds.size.y ; 
 
-        
-  
-        
-        // Jitter triangle height every trial
-        
-        initialTriPrismScaleZ = triPrism.transform.localScale.z;
+        if (S1Active)
+        {
+            S1TriangleHeight = triPrism.GetComponent<Renderer>().bounds.size.z ; 
+            S1TriangleBase = triPrism.GetComponent<Renderer>().bounds.size.y ; 
+        }
+        else
+        {
+            S2TriangleHeight = triPrism.GetComponent<Renderer>().bounds.size.z ; 
+            S2TriangleBase = triPrism.GetComponent<Renderer>().bounds.size.y ; 
+        }
 
         // Generating the other objects
         float width = cornerTopRight.x - cornerBottomLeft.x;
@@ -504,6 +522,8 @@ public class StartStaircase : MonoBehaviour
 
             }
         } 
+
+
     }
     
     private bool IsHeadsetConnected()
@@ -517,11 +537,22 @@ public class StartStaircase : MonoBehaviour
     {
         trialResponseTime = Time.time - trialStartTime ; 
         finalTriPrismScaleZ = triPrism.transform.localScale.z;
-        string csvEntry = $"{System.DateTime.Now}, {finalTriPrismScaleZ}, {triPrism.GetComponent<Renderer>().bounds.size.z}, {triPrism.GetComponent<Renderer>().bounds.size.y}, {triPrism.GetComponent<Renderer>().bounds.size.z / triPrism.GetComponent<Renderer>().bounds.size.y}, {trialResponseTime}, {seedRecorded}\n";
+        
+
+        if (S1Active)
+        {
+            staircaseNum = 1;
+        }
+        else
+        {
+            staircaseNum = 2;
+        }
+
+        string csvEntry = $"{System.DateTime.Now}, {staircaseNum}, {response}, {finalTriPrismScaleZ}, {triPrism.GetComponent<Renderer>().bounds.size.z}, {triPrism.GetComponent<Renderer>().bounds.size.y}, {triPrism.GetComponent<Renderer>().bounds.size.z / triPrism.GetComponent<Renderer>().bounds.size.y}, {trialResponseTime}, {seedRecorded}\n";
 
         if (!File.Exists(filePath))
         {
-            File.WriteAllText(filePath, "Timestamp, Final TriPrism Scale Z, Height, Base, Height:Base Ratio, Response Time, Random Seed\n");
+            File.WriteAllText(filePath, "Timestamp, Staircase Num, Response, Final TriPrism Scale Z, Height, Base, Height:Base Ratio, Response Time, Random Seed\n");
         }
 
         File.AppendAllText(filePath, csvEntry);

@@ -3,6 +3,7 @@ using UnityEngine.XR;
 using System.IO;
 using System.Collections.Generic;
 
+
 public class StartStimulus : MonoBehaviour
 {
     public GameObject triPrism; 
@@ -150,7 +151,7 @@ public class StartStimulus : MonoBehaviour
 
         else
         {
-            int dynamicSeed = Random.Range(-100, 100);
+            int dynamicSeed = (int)(System.DateTime.Now.Ticks % 10000);
             Random.InitState(dynamicSeed);
             Debug.Log($"Seed: {dynamicSeed}");
             seedRecorded = dynamicSeed; 
@@ -158,12 +159,12 @@ public class StartStimulus : MonoBehaviour
 
         if (!Application.isEditor && IsHeadsetConnected())
         {
-            filePath = Path.Combine("/sdcard/Download", "IPD-RescaleData-fromQuest.csv");
+            filePath = Path.Combine("/sdcard/Download", "IPD-MethodOfAdjustment-fromQuest.csv");
         }
         
         else
         {
-            filePath = Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.Desktop), "IPD-RescaleData.csv");
+            filePath = Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.Desktop), "IPD-MethodOfAdjustment.csv");
         }
 
         // Generating the prism 
