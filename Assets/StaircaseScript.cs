@@ -45,7 +45,7 @@ public class StartStaircase : MonoBehaviour
     private string headTrackingDataFilePath; // For recording head-tracking data 
     // For method of adjustment
 
-    private Vector3 triPrismScaleChange = new Vector3(0.0f, 0.0f, 0.05f);
+    private Vector3 triPrismScaleChange = new Vector3(0.0f, 0.0f, 0.25f);
 
     public XRNode controllerNode;
 
@@ -56,27 +56,32 @@ public class StartStaircase : MonoBehaviour
 
     private int seedRecorded; 
 
+    private float triangleHeight;
+
     private bool? S1IsScalingUp;
-
     private bool? S2IsScalingUp;
-
     private bool S1Active = true; // If false, S2 is Active
-
-    private float S1TriangleHeight ;
-    private float S1TriangleBase ;
-    private float S2TriangleHeight ;
-    private float S2TriangleBase ;
     private float TriPrismScaleZ ; 
-
     private float S1TriPrismScaleZ;
     private float S2TriPrismScaleZ;
-
     private int staircaseNum;
+    private string S1Response;
+    private int S1Reversals = 0;
+
+    private string S2Response;
+    private int S2Reversals = 0;
 
     private float trialStartTime ; 
     private float trialResponseTime ; 
 
     private string response;
+    private List<float> reversalHeightList;
+
+    private string didReversalHappen;
+
+    private string csvReversal;
+
+    private int maxReversals = 10;
 
 
     void Awake()
@@ -97,17 +102,44 @@ public class StartStaircase : MonoBehaviour
 
             if (device.TryGetFeatureValue(CommonUsages.primaryButton, out bool buttonValue) && buttonValue && !isButtonPressed)
             {
-                SaveTriPrismScale();
+                response = "H";
 
-                // if (triangleHeight >= triangleBase)
-                // {
-                //     // Incorrect height is longer but response is that base is longer
-                //     // isScalingUp = true ;
-                // }
-                // else
-                // {
-                //     // isScalingUp = false ; 
-                // }
+                if (S1Active)
+                {
+                    S1IsScalingUp = false;
+                    S1ReversalTracker();
+                    SaveTriPrismScale();
+
+                    if (S2Reversals < maxReversals)
+                    {
+                        S1Active = false; 
+                    }
+                    else
+                    {
+                        Debug.Log("Maximum Reversals reached for Staircase 2. Will finish Staircase 1.");
+                        S1Active = true;
+                    }
+                    
+                    
+                }
+
+                else
+                {
+                    S2IsScalingUp = false;   
+                    S2ReversalTracker();
+                    SaveTriPrismScale();  
+                    
+                    if (S1Reversals < maxReversals)
+                    {
+                        S1Active = true;
+                    }
+                    else
+                    {
+                        Debug.Log("Maximum Reversals reached for Staircase 1. Will finish Staircase 2.");
+                        S1Active = false;
+                    }      
+                         
+                }
 
                 InstantiateBooksPrism();
                 isButtonPressed = true ;
@@ -117,17 +149,45 @@ public class StartStaircase : MonoBehaviour
 
             if (device.TryGetFeatureValue(CommonUsages.secondaryButton, out bool secondaryButtonValue) && secondaryButtonValue && !isButtonPressed)
             {
-                SaveTriPrismScale();
+                response="B";
 
-                // if (triangleHeight >= triangleBase)
-                // {
-                //     // Correct
-                //     // isScalingUp = false ;
-                // }
-                // else
-                // {
-                //     // isScalingUp = true ; 
-                // }
+                if (S1Active)
+                {
+                    S1IsScalingUp = true;
+                    S1ReversalTracker();
+                    SaveTriPrismScale();
+                    
+                    if (S2Reversals < maxReversals)
+                    {
+                        S1Active = false; 
+                    }
+                    else
+                    {
+                        Debug.Log("Maximum Reversals reached for Staircase 2. Will finish Staircase 1.");
+                        S1Active = true;
+                    }
+
+                    
+                }
+
+                else
+                {
+                    S2IsScalingUp = true;
+                    S2ReversalTracker();     
+                    SaveTriPrismScale();  
+
+                    if (S1Reversals < maxReversals)
+                    {
+                        S1Active = true;
+                    }
+                    else
+                    {
+                        Debug.Log("Maximum Reversals reached for Staircase 1. Will finish Staircase 2.");
+                        S1Active = false;
+                    }     
+                            
+                }
+
                 InstantiateBooksPrism();
                 isButtonPressed = true ;
                 Invoke("ResetButtonState", 1f);
@@ -157,22 +217,45 @@ public class StartStaircase : MonoBehaviour
             if (Input.GetKeyDown(KeyCode.H) )
             {
                 response = "H";
-                SaveTriPrismScale();
 
                 if (S1Active)
                 {
                     S1IsScalingUp = false;
-                    S1Active = false;
+                    S1ReversalTracker();
+                    SaveTriPrismScale();
+
+                    if (S2Reversals < maxReversals)
+                    {
+                        S1Active = false; 
+                    }
+                    else
+                    {
+                        Debug.Log("Maximum Reversals reached for Staircase 2. Will finish Staircase 1.");
+                        S1Active = true;
+                    }
+                    
+                    
                 }
 
                 else
                 {
                     S2IsScalingUp = false;   
-
-                    S1Active = true;               
+                    S2ReversalTracker();
+                    SaveTriPrismScale();  
+                    
+                    if (S1Reversals < maxReversals)
+                    {
+                        S1Active = true;
+                    }
+                    else
+                    {
+                        Debug.Log("Maximum Reversals reached for Staircase 1. Will finish Staircase 2.");
+                        S1Active = false;
+                    }      
+                         
                 }
 
-
+                
                 InstantiateBooksPrism();
                 
         
@@ -182,26 +265,145 @@ public class StartStaircase : MonoBehaviour
             if (Input.GetKeyDown(KeyCode.B) )
             {
                 response="B";
-                SaveTriPrismScale();
 
                 if (S1Active)
                 {
                     S1IsScalingUp = true;
+                    S1ReversalTracker();
+                    SaveTriPrismScale();
+                    
+                    if (S2Reversals < maxReversals)
+                    {
+                        S1Active = false; 
+                    }
+                    else
+                    {
+                        Debug.Log("Maximum Reversals reached for Staircase 2. Will finish Staircase 1.");
+                        S1Active = true;
+                    }
 
-                    S1Active = false;
+                    
                 }
 
                 else
                 {
                     S2IsScalingUp = true;
+                    S2ReversalTracker();     
+                    SaveTriPrismScale();  
 
-                    S1Active = true;                  
+                    if (S1Reversals < maxReversals)
+                    {
+                        S1Active = true;
+                    }
+                    else
+                    {
+                        Debug.Log("Maximum Reversals reached for Staircase 1. Will finish Staircase 2.");
+                        S1Active = false;
+                    }     
+                            
                 }
 
+                
                 InstantiateBooksPrism();
                 
             }
         }
+
+    }
+
+    private void S1ReversalTracker()
+    {
+        if (S1Response != null)
+        {
+            if (S1Response != response)
+            {
+                S1Reversals ++;
+                //instantiatedShelves.Add(shelfLedge);
+                //reversalHeightList.Add(triangleHeight);
+                didReversalHappen = "Yes";
+            }
+            else
+            {
+                didReversalHappen = "No";
+            }
+        }
+
+        Debug.Log($"S1 Number of Reversals: {S1Reversals}");
+        S1Response = response;
+
+        if (S1Reversals >= maxReversals && S2Reversals >= maxReversals)
+        {
+            Debug.Log("Maximum Reversals reached for both Staircase");
+
+            if (Application.isEditor)
+            {
+                
+                // UnityEditor.EditorApplication.isPlaying = false; 
+            }
+            else
+            {
+                Application.Quit();
+            }
+        }
+
+        if (S1Reversals >= 1 && S1Reversals < 3)
+        {
+            triPrismScaleChange = new Vector3(0f, 0f, 0.125f);
+        }
+        else if (S1Reversals >= 3)
+        {
+            triPrismScaleChange = new Vector3(0f, 0f, 0.0625f);
+        }
+
+
+
+        
+    }
+
+    private void S2ReversalTracker()
+    {
+        if (S2Response != null)
+        {
+            if (S2Response != response)
+            {
+                S2Reversals ++;
+                //instantiatedShelves.Add(shelfLedge);
+                //reversalHeightList.Add(triangleHeight);
+                didReversalHappen = "Yes";
+            }
+            else
+            {
+                didReversalHappen = "No";
+            }
+        }
+
+        S2Response = response;
+        Debug.Log($"S2 Number of Reversals: {S2Reversals}");
+
+        if (S1Reversals >= maxReversals && S2Reversals >= maxReversals)
+        {
+            Debug.Log("Maximum Reversals reached for both Staircase");
+            if (Application.isEditor)
+            {
+                
+                // UnityEditor.EditorApplication.isPlaying = false; 
+            }
+            else
+            {
+                Application.Quit();
+            }
+        }
+
+        if (S2Reversals >= 1 && S2Reversals < 3)
+        {
+            triPrismScaleChange = new Vector3(0f, 0f, 0.125f);
+        }
+        else if (S2Reversals >= 3)
+        {
+            triPrismScaleChange = new Vector3(0f, 0f, 0.0625f);
+        }
+
+
 
     }
 
@@ -312,20 +514,11 @@ public class StartStaircase : MonoBehaviour
         float triPrismZScaleOffset = (triPrism.GetComponent<Renderer>().bounds.size.z - basicTriPrismScale) / 2;
         triPrism.transform.position += new Vector3(0.0f, 0.0f, -triPrismZScaleOffset);
 
-        // triangleHeight = triPrism.GetComponent<Renderer>().bounds.size.z ; 
+        triangleHeight = triPrism.GetComponent<Renderer>().bounds.size.z ; 
 
         // triangleBase = triPrism.GetComponent<Renderer>().bounds.size.y ; 
 
-        if (S1Active)
-        {
-            S1TriangleHeight = triPrism.GetComponent<Renderer>().bounds.size.z ; 
-            S1TriangleBase = triPrism.GetComponent<Renderer>().bounds.size.y ; 
-        }
-        else
-        {
-            S2TriangleHeight = triPrism.GetComponent<Renderer>().bounds.size.z ; 
-            S2TriangleBase = triPrism.GetComponent<Renderer>().bounds.size.y ; 
-        }
+
 
         // Generating the other objects
         float width = cornerTopRight.x - cornerBottomLeft.x;
@@ -532,6 +725,7 @@ public class StartStaircase : MonoBehaviour
         InputDevices.GetDevices(devices);
         return devices.Count > 0;
     }
+    
 
     private void SaveTriPrismScale()
     {
@@ -548,11 +742,20 @@ public class StartStaircase : MonoBehaviour
             staircaseNum = 2;
         }
 
-        string csvEntry = $"{System.DateTime.Now}, {staircaseNum}, {response}, {finalTriPrismScaleZ}, {triPrism.GetComponent<Renderer>().bounds.size.z}, {triPrism.GetComponent<Renderer>().bounds.size.y}, {triPrism.GetComponent<Renderer>().bounds.size.z / triPrism.GetComponent<Renderer>().bounds.size.y}, {trialResponseTime}, {seedRecorded}\n";
+        if (didReversalHappen == "Yes")
+        {
+            csvReversal = "Reversal";
+        }
+        else
+        {
+            csvReversal = "";
+        }
+
+        string csvEntry = $"{System.DateTime.Now}, {staircaseNum}, {response}, {csvReversal}, {finalTriPrismScaleZ}, {triPrism.GetComponent<Renderer>().bounds.size.z}, {triPrism.GetComponent<Renderer>().bounds.size.y}, {triPrism.GetComponent<Renderer>().bounds.size.z / triPrism.GetComponent<Renderer>().bounds.size.y}, {trialResponseTime}, {seedRecorded}\n";
 
         if (!File.Exists(filePath))
         {
-            File.WriteAllText(filePath, "Timestamp, Staircase Num, Response, Final TriPrism Scale Z, Height, Base, Height:Base Ratio, Response Time, Random Seed\n");
+            File.WriteAllText(filePath, "Timestamp, Staircase Num, Response, Reversal?, Final TriPrism Scale Z, Height, Base, Height:Base Ratio, Response Time, Random Seed\n");
         }
 
         File.AppendAllText(filePath, csvEntry);
