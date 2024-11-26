@@ -45,7 +45,7 @@ public class StartStimulus : MonoBehaviour
 
     // For method of adjustment
 
-    private Vector3 triPrismScaleChange = new Vector3(0.0f, 0.0f, 0.05f);
+    private Vector3 triPrismScaleChange = new Vector3(0.0f, 0.0f, 0.025f);
 
     public XRNode controllerNode;
 
@@ -55,6 +55,9 @@ public class StartStimulus : MonoBehaviour
     private bool isButtonPressed = false ; 
 
     private int seedRecorded; 
+
+    private int trials = 0;
+    private int maxTrials = 5;
 
 
     void Awake()
@@ -135,6 +138,16 @@ public class StartStimulus : MonoBehaviour
 
     }
 
+    private void TrialTracker()
+    {
+        trials ++; 
+
+        if (trials > maxTrials)
+        {
+            Application.Quit();
+        }
+    }
+
     private void ResetButtonState()
     {
         isButtonPressed = false ; 
@@ -142,7 +155,8 @@ public class StartStimulus : MonoBehaviour
     
     private void InstantiateBooksPrism()
     {
-        
+        int ipdValueFp = SharedData.ipdValue;
+        int participantValueFp = SharedData.participantValue;
         if (seed != 0)
         {
             Random.InitState(seed);
@@ -159,7 +173,8 @@ public class StartStimulus : MonoBehaviour
 
         if (!Application.isEditor && IsHeadsetConnected())
         {
-            filePath = Path.Combine("/sdcard/Download", "IPD-MethodOfAdjustment-fromQuest.csv");
+            string participantFileName = $"IPD-MethodOfAdjustment-fromQuest-P{participantValueFp}-IPD{ipdValueFp}.csv";
+            filePath = Path.Combine("/sdcard/Download", participantFileName);
         }
         
         else
@@ -291,7 +306,7 @@ public class StartStimulus : MonoBehaviour
 
 
 
-                        if (currentXPosition < triPrismX - triPrism.GetComponent<Renderer>().bounds.size.x * 1.0f  || currentXPosition > triPrismX + triPrism.GetComponent<Renderer>().bounds.size.x * 1.0f || rowCenterY >  triPrismY + triPrism.GetComponent<Renderer>().bounds.size.y * 0.75f || rowCenterY < triPrismY - triPrism.GetComponent<Renderer>().bounds.size.y * 0.75f ) 
+                        if (currentXPosition < triPrismX - triPrism.GetComponent<Renderer>().bounds.size.x * 1.0f  || currentXPosition > triPrismX + triPrism.GetComponent<Renderer>().bounds.size.x * 1.0f || rowCenterY >  triPrismY + triPrism.GetComponent<Renderer>().bounds.size.y * 0.7f || rowCenterY < triPrismY - triPrism.GetComponent<Renderer>().bounds.size.y * 0.7f ) 
                         {
                             
                             GameObject book = Instantiate(bookMeshes[Random.Range(0, bookMeshes.Length)]);
@@ -395,6 +410,8 @@ public class StartStimulus : MonoBehaviour
 
             }
         } 
+
+        TrialTracker();
     }
     
     private bool IsHeadsetConnected()
