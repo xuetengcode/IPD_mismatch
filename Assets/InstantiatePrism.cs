@@ -45,7 +45,7 @@ public class StartStimulus : MonoBehaviour
 
     // For method of adjustment
 
-    private Vector3 triPrismScaleChange = new Vector3(0.0f, 0.0f, 0.025f);
+    private Vector3 triPrismScaleChange = new Vector3(0.0f, 0.0f, 0.005f);
 
     public XRNode controllerNode;
 
