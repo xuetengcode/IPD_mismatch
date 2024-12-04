@@ -3355,8 +3355,8 @@ MonoBehaviour:
   triPrismZ: -0.3
   seed: 0
   triPrismRotateCCW: 90
-  triPrismMaterial: {fileID: 2100000, guid: 3ae006ab3e41d47b2b4e126fcac56197, type: 2}
-  triPrismScale: {x: 0.47396, y: 1.5}
+  triPrismMaterial: {fileID: 2100000, guid: 91b99f65e07704368b0bbed8b6126376, type: 2}
+  triPrismScale: {x: 0.47396, y: 11.25}
   cornerBottomLeft: {x: -2.5, y: -1.5, z: 0}
   cornerTopRight: {x: 2.5, y: 2.375, z: 0}
   wallSparseness: 0

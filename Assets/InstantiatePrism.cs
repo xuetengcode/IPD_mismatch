@@ -188,7 +188,7 @@ public class StartStimulus : MonoBehaviour
             Destroy(triPrism);
         }
 
-        float jitterTriPrismY = Random.Range(-0.01f, 0.02f);
+        float jitterTriPrismY = Random.Range(-0.01f, 0.01f);
         float jitterTriPrismZ = Random.Range(-0.04f, 0.02f);
         Vector3 position = new Vector3(triPrismX, triPrismY + jitterTriPrismY, triPrismZ);
         triPrism = Instantiate(triPrism, position, Quaternion.Euler(0, 0, triPrismRotateCCW));
@@ -201,7 +201,7 @@ public class StartStimulus : MonoBehaviour
             objectRenderer.material = triPrismMaterial;
         }
 
-        float jitteredTriPrismScaleZ = Random.Range(0.3f, 1.0f);
+        float jitteredTriPrismScaleZ = Random.Range(0.284375f, 0.853125f);
         triPrism.transform.localScale = new Vector3(triPrismScale.x, triPrismScale.y, 1.0f); 
         float basicTriPrismScale = triPrism.GetComponent<Renderer>().bounds.size.z;
         triPrism.transform.localScale = new Vector3(triPrismScale.x, triPrismScale.y, jitteredTriPrismScaleZ); 
