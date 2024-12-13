@@ -23,12 +23,22 @@ public class MenuController2 : MonoBehaviour
 
     public void StaircaseButton()
     {
-        SceneManager.LoadScene("StaircaseScene");
+        SceneManager.LoadScene("FixationSceneStaircase");
     }
 
     public void AdjustmentButton()
     {
         SceneManager.LoadScene("MethodOfAdjustment");
+    }
+
+    public void AdjustBigPrism()
+    {
+        SceneManager.LoadScene("MoA_Big");        
+    }
+
+    public void AdjustSmallPrism()
+    {
+        SceneManager.LoadScene("MoA_Small");              
     }
 
 }

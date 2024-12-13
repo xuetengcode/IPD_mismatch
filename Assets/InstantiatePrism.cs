@@ -6,6 +6,7 @@ using System.Collections.Generic;
 
 public class StartStimulus : MonoBehaviour
 {
+    public string experimentType;
     public GameObject triPrism; 
     public float triPrismX; 
     public float triPrismY;
@@ -58,6 +59,10 @@ public class StartStimulus : MonoBehaviour
 
     private int trials = 0;
     private int maxTrials = 5;
+
+    private float jitteredTriPrismDepth;
+
+    private float jitterTriPrismY;
 
 
     void Awake()
@@ -173,13 +178,13 @@ public class StartStimulus : MonoBehaviour
 
         if (!Application.isEditor && IsHeadsetConnected())
         {
-            string participantFileName = $"IPD-MethodOfAdjustment-fromQuest-P{participantValueFp}-IPD{ipdValueFp}.csv";
+            string participantFileName = $"IPD-MethodOfAdjustment-{experimentType}-fromQuest-P{participantValueFp}-IPD{ipdValueFp}.csv";
             filePath = Path.Combine("/sdcard/Download", participantFileName);
         }
         
         else
         {
-            filePath = Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.Desktop), "IPD-MethodOfAdjustment.csv");
+            filePath = Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.Desktop), $"IPD-MethodOfAdjustment-{experimentType}.csv");
         }
 
         // Generating the prism 
@@ -188,7 +193,7 @@ public class StartStimulus : MonoBehaviour
             Destroy(triPrism);
         }
 
-        float jitterTriPrismY = Random.Range(-0.01f, 0.01f);
+        jitterTriPrismY = Random.Range(-0.01f, 0.01f);
         float jitterTriPrismZ = Random.Range(-0.04f, 0.02f);
         Vector3 position = new Vector3(triPrismX, triPrismY + jitterTriPrismY, triPrismZ);
         triPrism = Instantiate(triPrism, position, Quaternion.Euler(0, 0, triPrismRotateCCW));
@@ -202,10 +207,13 @@ public class StartStimulus : MonoBehaviour
         }
 
         float jitteredTriPrismScaleZ = Random.Range(0.284375f, 0.853125f);
+        
         triPrism.transform.localScale = new Vector3(triPrismScale.x, triPrismScale.y, 1.0f); 
         float basicTriPrismScale = triPrism.GetComponent<Renderer>().bounds.size.z;
         triPrism.transform.localScale = new Vector3(triPrismScale.x, triPrismScale.y, jitteredTriPrismScaleZ); 
-        float triPrismZScaleOffset = (triPrism.GetComponent<Renderer>().bounds.size.z - basicTriPrismScale) / 2;
+        jitteredTriPrismDepth = triPrism.GetComponent<Renderer>().bounds.size.z;
+
+        float triPrismZScaleOffset = (jitteredTriPrismDepth - basicTriPrismScale) / 2;
         triPrism.transform.position += new Vector3(0.0f, 0.0f, -triPrismZScaleOffset);
 
         
@@ -424,11 +432,11 @@ public class StartStimulus : MonoBehaviour
     private void SaveTriPrismScale()
     {
         finalTriPrismScaleZ = triPrism.transform.localScale.z;
-        string csvEntry = $"{System.DateTime.Now}, {finalTriPrismScaleZ}, {triPrism.GetComponent<Renderer>().bounds.size.z}, {triPrism.GetComponent<Renderer>().bounds.size.y}, {triPrism.GetComponent<Renderer>().bounds.size.z / triPrism.GetComponent<Renderer>().bounds.size.y}, {seedRecorded}\n";
+        string csvEntry = $"{System.DateTime.Now}, {finalTriPrismScaleZ}, {triPrism.GetComponent<Renderer>().bounds.size.z}, {triPrism.GetComponent<Renderer>().bounds.size.y}, {triPrism.GetComponent<Renderer>().bounds.size.z / triPrism.GetComponent<Renderer>().bounds.size.y}, {jitterTriPrismY}, {jitteredTriPrismDepth}, {seedRecorded}\n";
 
         if (!File.Exists(filePath))
         {
-            File.WriteAllText(filePath, "Timestamp, Final TriPrism Scale Z, Height, Base, Height:Base Ratio, Random Seed\n");
+            File.WriteAllText(filePath, "Timestamp, Final TriPrism Scale Z, Depth, Base, Depth:Base Ratio, Y Jitter, Initial Depth, Random Seed\n");
         }
 
         File.AppendAllText(filePath, csvEntry);

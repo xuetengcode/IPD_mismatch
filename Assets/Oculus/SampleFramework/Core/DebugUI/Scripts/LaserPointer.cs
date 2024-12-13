@@ -30,6 +30,7 @@ public class LaserPointer : OVRCursor
     private LaserBeamBehavior _laserBeamBehavior;
     bool m_restoreOnInputAcquired = false;
 
+    [SerializeField]
     public LaserBeamBehavior laserBeamBehavior
     {
         set

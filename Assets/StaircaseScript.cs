@@ -45,7 +45,7 @@ public class StartStaircase : MonoBehaviour
     private string headTrackingDataFilePath; // For recording head-tracking data 
     // For method of adjustment
 
-    private Vector3 triPrismScaleChange = new Vector3(0.0f, 0.0f, 0.25f);
+    private Vector3 triPrismScaleChange = new Vector3(0.0f, 0.0f, 0.115f);
 
     public XRNode controllerNode;
 
@@ -81,7 +81,7 @@ public class StartStaircase : MonoBehaviour
 
     private string csvReversal;
 
-    private int maxReversals = 10;
+    private int maxReversals = 12;
 
 
     void Awake()
@@ -348,11 +348,11 @@ public class StartStaircase : MonoBehaviour
 
         if (S1Reversals >= 1 && S1Reversals < 3)
         {
-            triPrismScaleChange = new Vector3(0f, 0f, 0.125f);
+            triPrismScaleChange = new Vector3(0f, 0f, 0.0575f);
         }
         else if (S1Reversals >= 3)
         {
-            triPrismScaleChange = new Vector3(0f, 0f, 0.0625f);
+            triPrismScaleChange = new Vector3(0f, 0f, 0.02875f);
         }
 
 
@@ -414,6 +414,9 @@ public class StartStaircase : MonoBehaviour
     
     private void InstantiateBooksPrism()
     {
+        
+        int ipdValueFp = SharedData.ipdValue;
+        int participantValueFp = SharedData.participantValue;
         trialStartTime = Time.time ; 
 
         if (seed != 0)
@@ -432,8 +435,10 @@ public class StartStaircase : MonoBehaviour
 
         if (!Application.isEditor && IsHeadsetConnected())
         {
-            filePath = Path.Combine("/sdcard/Download", "IPD-Staircase-fromQuest.csv");
-            headTrackingDataFilePath = Path.Combine("/sdcard/Download", "HeadTrackingData.csv");
+            string participantFileName = $"IPD-Staircase-fromQuest-P{participantValueFp}-IPD{ipdValueFp}.csv";
+            filePath = Path.Combine("/sdcard/Download", participantFileName);
+            string headTrackingFileName = $"HeadTrackingData-fromQuest-P{participantValueFp}-IPD{ipdValueFp}.csv";
+            headTrackingDataFilePath = Path.Combine("/sdcard/Download", headTrackingFileName);
         }
         
         else
@@ -447,8 +452,8 @@ public class StartStaircase : MonoBehaviour
             Destroy(triPrism);
         }
 
-        float jitterTriPrismY = Random.Range(-0.01f, 0.02f);
-        float jitterTriPrismZ = Random.Range(-0.04f, 0.02f);
+        float jitterTriPrismY = Random.Range(-0.01f, 0.01f);
+        float jitterTriPrismZ = Random.Range(-0.01f, 0.01f);
         Vector3 position = new Vector3(triPrismX, triPrismY + jitterTriPrismY, triPrismZ);
         triPrism = Instantiate(triPrism, position, Quaternion.Euler(0, 0, triPrismRotateCCW));
 
@@ -468,13 +473,13 @@ public class StartStaircase : MonoBehaviour
             
             if (startUpDownRandom <= 0.5)
             {
-                S1TriPrismScaleZ = Random.Range(0.4f, 0.5f); // 16-20cm
-                S2TriPrismScaleZ = Random.Range(1.3f, 1.4f); // 52-56cm
+                S1TriPrismScaleZ = Random.Range(0.17f, 0.285f); // 16-20cm
+                S2TriPrismScaleZ = Random.Range(0.8525f, 0.9675f); // 52-56cm
             } 
             else
             {
-                S1TriPrismScaleZ = Random.Range(1.3f, 1.4f);
-                S2TriPrismScaleZ = Random.Range(0.4f, 0.5f); 
+                S1TriPrismScaleZ = Random.Range(0.8525f, 0.9675f);
+                S2TriPrismScaleZ = Random.Range(0.17f, 0.285f); 
             }
 
             TriPrismScaleZ = S1TriPrismScaleZ; 
@@ -488,22 +493,37 @@ public class StartStaircase : MonoBehaviour
 
         if (S1Active == true && S1IsScalingUp == true)
         {
-            S1TriPrismScaleZ += triPrismScaleChange.z;
+            if (S1TriPrismScaleZ + triPrismScaleChange.z <= 1.1375)
+            {
+                S1TriPrismScaleZ += triPrismScaleChange.z;
+            }
             TriPrismScaleZ = S1TriPrismScaleZ;
         }
         else if (S1Active == true && S1IsScalingUp == false)
         {
-            S1TriPrismScaleZ -= triPrismScaleChange.z;
+            if (S1TriPrismScaleZ - triPrismScaleChange.z >= 0.17075)
+            {
+                S1TriPrismScaleZ -= triPrismScaleChange.z;
+            }
+            
             TriPrismScaleZ = S1TriPrismScaleZ;
         }
         else if (S1Active == false && S2IsScalingUp == true)
         {
-            S2TriPrismScaleZ += triPrismScaleChange.z;
+            if (S2TriPrismScaleZ + triPrismScaleChange.z <= 1.1375)
+            {
+                S2TriPrismScaleZ += triPrismScaleChange.z;
+            }
+
             TriPrismScaleZ = S2TriPrismScaleZ;
         }
         else if (S1Active == false && S2IsScalingUp == false)
         {
-            S2TriPrismScaleZ -= triPrismScaleChange.z;
+            if (S2TriPrismScaleZ - triPrismScaleChange.z >= 0.17075)
+            {
+                S2TriPrismScaleZ -= triPrismScaleChange.z;
+            }
+
             TriPrismScaleZ = S2TriPrismScaleZ;
         }
        
