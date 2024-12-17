@@ -16,7 +16,7 @@ public class StartStaircase : MonoBehaviour
     
     public float triPrismRotateCCW;
 
-    public Material triPrismMaterial;
+    public Material[] triPrismMaterials;
     public Vector2 triPrismScale = new Vector2(1.0f, 3.0f);
 
     public Vector3 cornerBottomLeft; // Bottom-left corner
@@ -100,7 +100,7 @@ public class StartStaircase : MonoBehaviour
         { 
             InputDevice device = InputDevices.GetDeviceAtXRNode(controllerNode);
 
-            if (device.TryGetFeatureValue(CommonUsages.primaryButton, out bool buttonValue) && buttonValue && !isButtonPressed)
+            if (device.TryGetFeatureValue(CommonUsages.secondaryButton, out bool secondaryButtonValue) && secondaryButtonValue && !isButtonPressed)
             {
                 response = "H";
 
@@ -112,7 +112,16 @@ public class StartStaircase : MonoBehaviour
 
                     if (S2Reversals < maxReversals)
                     {
-                        S1Active = false; 
+                        float staircaseRandom = Random.Range(0f, 1f);
+                        if (staircaseRandom <= 0.5f)
+                        {
+                            S1Active = false; 
+                        }
+                        else
+                        {
+                            Debug.Log("S2 Randomly not activated.");
+                            S1Active = true;
+                        }
                     }
                     else
                     {
@@ -131,7 +140,17 @@ public class StartStaircase : MonoBehaviour
                     
                     if (S1Reversals < maxReversals)
                     {
-                        S1Active = true;
+                        float staircaseRandom = Random.Range(0f, 1f);
+                        if (staircaseRandom <= 0.5f)
+                        {
+                            S1Active = true;
+                        }
+                        else
+                        {
+                            Debug.Log("S1 Randomly not activated.");
+                            S1Active = false;
+                        }
+                        
                     }
                     else
                     {
@@ -147,7 +166,7 @@ public class StartStaircase : MonoBehaviour
                 
             }
 
-            if (device.TryGetFeatureValue(CommonUsages.secondaryButton, out bool secondaryButtonValue) && secondaryButtonValue && !isButtonPressed)
+            if (device.TryGetFeatureValue(CommonUsages.primaryButton, out bool buttonValue) && buttonValue && !isButtonPressed)
             {
                 response="B";
 
@@ -156,10 +175,19 @@ public class StartStaircase : MonoBehaviour
                     S1IsScalingUp = true;
                     S1ReversalTracker();
                     SaveTriPrismScale();
-                    
+
                     if (S2Reversals < maxReversals)
                     {
-                        S1Active = false; 
+                        float staircaseRandom = Random.Range(0f, 1f);
+                        if (staircaseRandom <= 0.5f)
+                        {
+                            S1Active = false; 
+                        }
+                        else
+                        {
+                            Debug.Log("S2 Randomly not activated.");
+                            S1Active = true;
+                        }
                     }
                     else
                     {
@@ -178,7 +206,17 @@ public class StartStaircase : MonoBehaviour
 
                     if (S1Reversals < maxReversals)
                     {
-                        S1Active = true;
+                        float staircaseRandom = Random.Range(0f, 1f);
+                        if (staircaseRandom <= 0.5f)
+                        {
+                            S1Active = true;
+                        }
+                        else
+                        {
+                            Debug.Log("S1 Randomly not activated.");
+                            S1Active = false;
+                        }
+                        
                     }
                     else
                     {
@@ -226,7 +264,16 @@ public class StartStaircase : MonoBehaviour
 
                     if (S2Reversals < maxReversals)
                     {
-                        S1Active = false; 
+                        float staircaseRandom = Random.Range(0f, 1f);
+                        if (staircaseRandom <= 0.5f)
+                        {
+                            S1Active = false; 
+                        }
+                        else
+                        {
+                            Debug.Log("S2 Randomly not activated.");
+                            S1Active = true;
+                        }
                     }
                     else
                     {
@@ -245,7 +292,17 @@ public class StartStaircase : MonoBehaviour
                     
                     if (S1Reversals < maxReversals)
                     {
-                        S1Active = true;
+                        float staircaseRandom = Random.Range(0f, 1f);
+                        if (staircaseRandom <= 0.5f)
+                        {
+                            S1Active = true;
+                        }
+                        else
+                        {
+                            Debug.Log("S1 Randomly not activated.");
+                            S1Active = false;
+                        }
+                        
                     }
                     else
                     {
@@ -274,7 +331,16 @@ public class StartStaircase : MonoBehaviour
                     
                     if (S2Reversals < maxReversals)
                     {
-                        S1Active = false; 
+                        float staircaseRandom = Random.Range(0f, 1f);
+                        if (staircaseRandom <= 0.5f)
+                        {
+                            S1Active = false; 
+                        }
+                        else
+                        {
+                            Debug.Log("S2 Randomly not activated.");
+                            S1Active = true;
+                        }
                     }
                     else
                     {
@@ -293,7 +359,17 @@ public class StartStaircase : MonoBehaviour
 
                     if (S1Reversals < maxReversals)
                     {
-                        S1Active = true;
+                        float staircaseRandom = Random.Range(0f, 1f);
+                        if (staircaseRandom <= 0.5f)
+                        {
+                            S1Active = true;
+                        }
+                        else
+                        {
+                            Debug.Log("S1 Randomly not activated.");
+                            S1Active = false;
+                        }
+                        
                     }
                     else
                     {
@@ -460,8 +536,14 @@ public class StartStaircase : MonoBehaviour
 
 
         Renderer objectRenderer = triPrism.GetComponent<Renderer>();
-        if (objectRenderer != null && triPrismMaterial != null)
+        // if (objectRenderer != null && triPrismMaterial != null)
+        // {
+        //     objectRenderer.material = triPrismMaterial;
+        // }
+
+        if (objectRenderer != null && triPrismMaterials.Length > 0)
         {
+            Material triPrismMaterial = triPrismMaterials[Random.Range(0, triPrismMaterials.Length)];
             objectRenderer.material = triPrismMaterial;
         }
 
