@@ -113,7 +113,7 @@ public class StartStaircase : MonoBehaviour
                     if (S2Reversals < maxReversals)
                     {
                         float staircaseRandom = Random.Range(0f, 1f);
-                        if (staircaseRandom <= 0.5f)
+                        if (staircaseRandom <= 0.5f || S1Reversals == maxReversals)
                         {
                             S1Active = false; 
                         }
@@ -126,7 +126,8 @@ public class StartStaircase : MonoBehaviour
                     else
                     {
                         Debug.Log("Maximum Reversals reached for Staircase 2. Will finish Staircase 1.");
-                        S1Active = true;
+                        CheckS1MaxReversal();
+                        
                     }
                     
                     
@@ -141,7 +142,7 @@ public class StartStaircase : MonoBehaviour
                     if (S1Reversals < maxReversals)
                     {
                         float staircaseRandom = Random.Range(0f, 1f);
-                        if (staircaseRandom <= 0.5f)
+                        if (staircaseRandom <= 0.5f || S2Reversals == maxReversals)
                         {
                             S1Active = true;
                         }
@@ -155,7 +156,8 @@ public class StartStaircase : MonoBehaviour
                     else
                     {
                         Debug.Log("Maximum Reversals reached for Staircase 1. Will finish Staircase 2.");
-                        S1Active = false;
+                        CheckS2MaxReversal();
+                        
                     }      
                          
                 }
@@ -179,7 +181,7 @@ public class StartStaircase : MonoBehaviour
                     if (S2Reversals < maxReversals)
                     {
                         float staircaseRandom = Random.Range(0f, 1f);
-                        if (staircaseRandom <= 0.5f)
+                        if (staircaseRandom <= 0.5f || S1Reversals == maxReversals)
                         {
                             S1Active = false; 
                         }
@@ -192,7 +194,8 @@ public class StartStaircase : MonoBehaviour
                     else
                     {
                         Debug.Log("Maximum Reversals reached for Staircase 2. Will finish Staircase 1.");
-                        S1Active = true;
+                        CheckS1MaxReversal();
+                        
                     }
 
                     
@@ -207,7 +210,7 @@ public class StartStaircase : MonoBehaviour
                     if (S1Reversals < maxReversals)
                     {
                         float staircaseRandom = Random.Range(0f, 1f);
-                        if (staircaseRandom <= 0.5f)
+                        if (staircaseRandom <= 0.5f || S2Reversals == maxReversals)
                         {
                             S1Active = true;
                         }
@@ -215,19 +218,21 @@ public class StartStaircase : MonoBehaviour
                         {
                             Debug.Log("S1 Randomly not activated.");
                             S1Active = false;
+
                         }
                         
                     }
                     else
                     {
                         Debug.Log("Maximum Reversals reached for Staircase 1. Will finish Staircase 2.");
-                        S1Active = false;
+                        CheckS2MaxReversal();
+                        
                     }     
                             
                 }
-
-                InstantiateBooksPrism();
                 isButtonPressed = true ;
+                InstantiateBooksPrism();
+                
                 Invoke("ResetButtonState", 1f);
 
             }
@@ -278,7 +283,14 @@ public class StartStaircase : MonoBehaviour
                     else
                     {
                         Debug.Log("Maximum Reversals reached for Staircase 2. Will finish Staircase 1.");
-                        S1Active = true;
+                        if (S1Reversals < maxReversals)
+                        {
+                            S1Active = true;
+                        }
+                        else
+                        {
+                            Application.Quit();
+                        }
                     }
                     
                     
@@ -307,7 +319,14 @@ public class StartStaircase : MonoBehaviour
                     else
                     {
                         Debug.Log("Maximum Reversals reached for Staircase 1. Will finish Staircase 2.");
-                        S1Active = false;
+                        if (S2Reversals < maxReversals)
+                        {
+                            S1Active = false;
+                        }
+                        else
+                        {
+                            Application.Quit();
+                        }
                     }      
                          
                 }
@@ -345,7 +364,14 @@ public class StartStaircase : MonoBehaviour
                     else
                     {
                         Debug.Log("Maximum Reversals reached for Staircase 2. Will finish Staircase 1.");
-                        S1Active = true;
+                        if (S1Reversals < maxReversals)
+                        {
+                            S1Active = true;
+                        }
+                        else
+                        {
+                            Application.Quit();
+                        }
                     }
 
                     
@@ -374,7 +400,14 @@ public class StartStaircase : MonoBehaviour
                     else
                     {
                         Debug.Log("Maximum Reversals reached for Staircase 1. Will finish Staircase 2.");
-                        S1Active = false;
+                        if (S2Reversals < maxReversals)
+                        {
+                            S1Active = false;
+                        }
+                        else
+                        {
+                            Application.Quit();
+                        }
                     }     
                             
                 }
@@ -385,6 +418,30 @@ public class StartStaircase : MonoBehaviour
             }
         }
 
+    }
+
+    private void CheckS1MaxReversal()
+    {
+        if (S1Reversals < maxReversals)
+        {
+            S1Active = true;
+        }
+        else
+        {
+            Application.Quit();
+        }    
+    }
+
+    private void CheckS2MaxReversal()
+        {
+        if (S2Reversals < maxReversals)
+        {
+            S1Active = false;
+        }
+        else
+        {
+            Application.Quit();
+        }    
     }
 
     private void S1ReversalTracker()
@@ -407,20 +464,20 @@ public class StartStaircase : MonoBehaviour
         Debug.Log($"S1 Number of Reversals: {S1Reversals}");
         S1Response = response;
 
-        if (S1Reversals >= maxReversals && S2Reversals >= maxReversals)
-        {
-            Debug.Log("Maximum Reversals reached for both Staircase");
+        // if (S1Reversals >= maxReversals && S2Reversals >= maxReversals)
+        // {
+        //     Debug.Log("Maximum Reversals reached for both Staircase");
 
-            if (Application.isEditor)
-            {
+        //     if (Application.isEditor)
+        //     {
                 
-                // UnityEditor.EditorApplication.isPlaying = false; 
-            }
-            else
-            {
-                Application.Quit();
-            }
-        }
+        //         // UnityEditor.EditorApplication.isPlaying = false; 
+        //     }
+        //     else
+        //     {
+        //         Application.Quit();
+        //     }
+        // }
 
         if (S1Reversals >= 1 && S1Reversals < 3)
         {
@@ -456,19 +513,19 @@ public class StartStaircase : MonoBehaviour
         S2Response = response;
         Debug.Log($"S2 Number of Reversals: {S2Reversals}");
 
-        if (S1Reversals >= maxReversals && S2Reversals >= maxReversals)
-        {
-            Debug.Log("Maximum Reversals reached for both Staircase");
-            if (Application.isEditor)
-            {
+        // if (S1Reversals >= maxReversals && S2Reversals >= maxReversals)
+        // {
+        //     Debug.Log("Maximum Reversals reached for both Staircase");
+        //     if (Application.isEditor)
+        //     {
                 
-                // UnityEditor.EditorApplication.isPlaying = false; 
-            }
-            else
-            {
-                Application.Quit();
-            }
-        }
+        //         // UnityEditor.EditorApplication.isPlaying = false; 
+        //     }
+        //     else
+        //     {
+        //         Application.Quit();
+        //     }
+        // }
 
         if (S2Reversals >= 1 && S2Reversals < 3)
         {
